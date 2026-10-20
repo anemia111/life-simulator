@@ -19,7 +19,7 @@
 | Market      | market.ts                                      | 需要・品質・供給・資金制約                      |
 | AI          | ai.ts / relationships.ts                       | 競合価格決定、職場での出会いと交流              |
 | Actions     | actions.ts                                     | 汎用行動定義・条件・費用・時間・効果の実行境界  |
-| Persistence | persistence.ts / migration.ts / legacy-save.ts | v4検証、v1/v2/v3移行、IndexedDBと3枠            |
+| Persistence | persistence.ts / migration.ts / legacy-save.ts | v6検証、v1〜v5移行、IndexedDBと3枠            |
 
 `src/ui/Phase1.tsx` に求人、シフト、生活、財務、関係、カレンダー、レポートを分離。既存の開始画面・ダッシュボード・事業・保存画面は `App.tsx` から接続。Zustandの `store.ts` は状態遷移と保存要求のみを担当する。
 
@@ -47,7 +47,7 @@ Person、Organization、Asset、EmploymentContract、Offering、Relationship、V
 
 ## 保存と互換性
 
-保存版 `schemaVersion=5`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限16MB。
+保存版 `schemaVersion=6`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限16MB。
 
 v1は旧スキーマで検証後、現金・債務・給与債権・事業・設備・能力・日付を維持して変換。旧元帳から金融チェックポイントを復元し、以後の残高照合を可能にする。記録のなかった勤務時間は勤務日数×所定時間で推定し、旧日次の時間配分・債務残高は未記録であると明記する。移行以前の月次情報は残された元帳・日次履歴の範囲に限る。
 
@@ -69,7 +69,7 @@ v2は既存状態を保ったまま新配列を空で追加する。v1の従来�
 
 `engine/spatial/types.ts` はCity・District・Property・Lease・SpatialState。`catalog.ts` は初期データ、`selectors.ts` は入居者・経路・求人の実効値・用途効果と立地係数、`preview.ts` は実際の需要式を使う非破壊比較、`commands.ts` は引越し・賃貸・解約・施設利用・月次請求、`schema.ts` は参照整合を担当。
 
-不変な都市・地区・物件カタログと、状態の `spatial.leases/favorites/homePropertyId` を分離する。入居者は物件静的入居者と賃貸契約から導出し重複保存しない。事業/会社の物件IDや従業員拠点も契約参照から取得する。68地点はすべて実データ。
+不変な都市・地区・物件カタログと、状態の `spatial.leases/favorites/homePropertyId` を分離する。入居者は物件静的入居者と賃貸契約から導出し重複保存しない。事業/会社の物件IDや従業員拠点も契約参照から取得する。74地点はすべて実データ。
 
 住所変更でEmploymentContractのcommuteを更新し、勤務の予約・給与・交通費・求人UIは同じ実効経路を参照。新しい地域求人は地区から生成し既存のCareer契約を再利用。住居費は従来のLife関数へ物件情報を提供して実際のFinance元帳へ反映する。
 
@@ -90,3 +90,9 @@ v3保存は家計・事業・株主・帳簿を保持し、現住居を若葉学
 AI/NPCはenterprise.Accountsを再利用し、元帳60件のopening圧縮と120か月の履歴を維持。新業界はIndustryModuleに加えWorldIndustryModelを登録。純粋な計算の契約と業界モデルの差はWORLD_SYSTEM.mdを参照。保存v4 fixtureを維持し、世界の初期化は旧データを破壊せず追加する。
 
 旧Phase 2/3の節は当時の設計経緯を含む。現在の市場配分・AIの正規データは本節とWORLD_SYSTEM.mdに従う。
+
+## v0.6 人生・関係・共同会計
+
+engine/social、engine/goals、engine/eventsを追加。SocialStateを保存v6へ含め、人物IDでPerson/Residentと結合。共同財布は既存Accounts、個人との振替はFinance.postとbookで対応記帳。claims合計=navを検証し、純資産へ本人持分だけ加算する。子の養育をscheduleのcareへ、NPCの交流をResident.hoursへ統合する。UIに条件・資金移動・関係成立の計算を持ち込まない。
+
+日次の世界処理の前に交流予約・世帯住所を同期。NPCはessential2hとcare/socialを除いた時間から事業・学習を割当。勤務・事業・費用処理の後に共同家計、週次社会行動、実変更からの年表、目標を評価。描画時は世界を進めない。重要イベントは年表へ残し、日常記憶は24件、共同帳簿はチェックポイント付き60件へ圧縮。詳細・追加例はSOCIAL_SYSTEM.md。

@@ -1,3 +1,9 @@
+import { initialSocial } from "./social/initial";
+import { seedGoals, updateGoals } from "./goals";
+import { prepareSocialDay } from "./social/relationships";
+import { socialDay } from "./social";
+import { familyBills, syncHomes } from "./social/households";
+import { observeLife } from "./events";
 import { initialSimulation } from "./simulation/initial";
 import { beginWorldDay, endWorldDay } from "./simulation";
 import {
@@ -66,7 +72,8 @@ export function newGame(
     skills: { service: 40 + n, craft: 35 + n, digital: 30 + n },
   }));
   const s: GameState = {
-    schemaVersion: 5,
+    schemaVersion: 6,
+    social: null!,
     simulation: null!,
     spatial: initialSpatial(),
     ventures: [],
@@ -125,6 +132,8 @@ export function newGame(
     notices: ["青葉市で、新しい毎日が始まります"],
   };
   s.simulation = initialSimulation(s, seed);
+  s.social = initialSocial(s);
+  seedGoals(s);
   pay(s, 24000, "入居月の家賃");
   return s;
 }
@@ -133,11 +142,14 @@ export function advanceDays(state: GameState, days: number) {
   const s = structuredClone(state);
   syncEmployment(s);
   for (let d = 0; d < days; d++) {
+    prepareSocialDay(s);
+    syncHomes(s);
     assertSchedule(s);
     const blocks = buildDayPlan(s);
     sleepAndRecover(s);
     decideCompetitors(s);
     beginWorldDay(s);
+    syncHomes(s);
     chargeInterest(s);
     let earned = 0,
       workHours = 0,
@@ -286,10 +298,22 @@ export function advanceDays(state: GameState, days: number) {
     );
     endWorldDay(s);
     livingExpenses(s);
+    familyBills(s);
+    socialDay(
+      s,
+      workHours +
+        blocks
+          .filter((b) => b.kind === "commute" || b.kind === "care")
+          .reduce((n, b) => n + b.hours, 0),
+    );
+    observeLife(s);
+    updateGoals(s);
     const entries = s.ledger.filter((e) => e.date === s.date);
-    const spending = entries
-      .filter((e) => e.kind === "living")
-      .reduce((a, e) => a - e.amount + Math.max(0, e.debtDelta), 0);
+    const spending =
+      entries
+        .filter((e) => e.kind === "living")
+        .reduce((a, e) => a - e.amount + Math.max(0, e.debtDelta), 0) +
+      s.social.today.playerCosts;
     const personalVentures = s.ventures.filter((v) => v.ownerId === "player");
     const sales =
         personalVentures.reduce((n, v) => n + v.last.revenue, 0) +
@@ -343,6 +367,7 @@ export function advanceDays(state: GameState, days: number) {
 export function dispatch(state: GameState, command: Command): GameState {
   if (command.type === "advance") return advanceDays(state, command.days);
   const s = structuredClone(state);
+  prepareSocialDay(s);
   syncEmployment(s);
   switch (command.type) {
     case "enterprise":
@@ -435,6 +460,9 @@ export function dispatch(state: GameState, command: Command): GameState {
       break;
   }
   syncEmployment(s);
+  syncHomes(s);
+  observeLife(s);
+  updateGoals(s);
   s.notices = s.notices.slice(0, 12);
   return s;
 }

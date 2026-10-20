@@ -1,3 +1,4 @@
+import { careHours } from "./social/selectors";
 import type { GameState, EmploymentContract, TimeBlock } from "./types";
 import { jobs } from "./catalog/jobs";
 import { weekday } from "./time";
@@ -13,6 +14,7 @@ export function availableHours(
     0,
     24 -
       sleep -
+      careHours(s, "player") -
       2 -
       contracts
         .filter((e) => isShiftDay(e, s.date) && !e.absentNext)
@@ -33,7 +35,7 @@ export function assertSchedule(
       }))
       .sort((a, b) => a.start - b.start);
     let end = sleep,
-      used = sleep + 2;
+      used = sleep + 2 + careHours(s, "player");
     for (const span of spans) {
       if (span.start < end || span.end > 24)
         throw Error("勤務・通勤が他のシフトまたは睡眠と重複しています");
@@ -94,6 +96,7 @@ export function buildDayPlan(s: GameState): TimeBlock[] {
     if (left > 0) throw Error("24時間を超える予定です");
   }
   allocate(2, "essential", "食事・身支度");
+  allocate(careHours(s, "player"), "care", "家族の養育");
   for (const a of s.manualActions) allocate(a.hours, "manual", a.label);
   const actionId = [0, 6].includes(weekday(s.date))
     ? s.routine.weekendAction

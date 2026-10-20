@@ -1,3 +1,5 @@
+import { shared } from "./social/households";
+import { household } from "./social/selectors";
 import { districtState } from "./simulation/market";
 import { homeProperty, district } from "./spatial/selectors";
 import { moveToProperty } from "./spatial/commands";
@@ -87,13 +89,14 @@ export function livingExpenses(s: GameState) {
     cost += v;
   };
   charge(h.daily * level.factor, "食費・日用品（" + level.name + "）");
-  if (day === 1 && s.date !== s.started) {
+  if (day === 1 && s.date !== s.started && !shared(household(s, "player"))) {
     charge(h.rent, h.name + " 家賃", true);
     const lease = s.spatial.leases.find((l) => l.tenantId === "player");
     if (lease) lease.paidMonth = s.date.slice(0, 7);
   }
-  if (day === 10) charge(h.utilities, "光熱費");
-  if (day === 15) charge(2500, "通信費");
+  if (day === 10 && !shared(household(s, "player")))
+    charge(h.utilities, "光熱費");
+  if (day === 15 && !shared(household(s, "player"))) charge(2500, "通信費");
   s.totals.living += cost;
   s.person.satisfaction = Math.max(
     0,

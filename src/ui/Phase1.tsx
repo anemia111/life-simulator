@@ -1,3 +1,4 @@
+import { householdClaim } from "../engine/social/selectors";
 import { jobOffer } from "../engine/spatial/selectors";
 import { PersonalBusinessFinance } from "./Phase2";
 import { enterpriseWealth } from "../engine/enterprise/accounting";
@@ -893,6 +894,9 @@ export function FinancePanel({ g }: { g: GameState }) {
               </b>
             </span>
             <span>
+              共同資金の持分（未払い負担を含む）<b>{yen(householdClaim(g))}</b>
+            </span>
+            <span>
               生活・ローン債務<b>−{yen(g.debt)}</b>
             </span>
             <span>
@@ -900,7 +904,7 @@ export function FinancePanel({ g }: { g: GameState }) {
             </span>
           </div>
           <p className="muted">
-            口座間の振替や借入は収入に数えません。事業の分別口座・在庫・設備・売掛金・債務と保有株式の簿価を純資産に含めます。個人事業の資金回収は振替です。減価償却・税・社会保険は未実装です。
+            口座間の振替や借入は収入に数えません。事業の分別口座・在庫・設備・売掛金・債務と保有株式の簿価を純資産に含めます。個人事業・世帯の資金移動は振替です。共同生活費の持分負担は生活支出に含め、個人口座の現金増減と区別します。減価償却・税・社会保険は未実装です。
           </p>
         </section>
       </div>

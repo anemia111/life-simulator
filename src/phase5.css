@@ -1,0 +1,249 @@
+.journey {
+  max-width: 1260px;
+  margin: auto;
+}
+.journey-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: #123f35;
+  color: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  gap: 22px;
+  margin: 20px 0;
+}
+.journey-summary small {
+  display: block;
+  color: #bcdbd0;
+  margin-bottom: 10px;
+}
+.journey-summary strong {
+  font-size: 16px;
+  line-height: 1.6;
+  display: block;
+}
+.journey-tabs {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+  padding: 5px;
+  background: #e9eee7;
+  border-radius: 12px;
+  margin: 24px 0;
+}
+.journey-tabs button {
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  padding: 12px 20px;
+  white-space: nowrap;
+  color: #53645a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.journey-tabs button[aria-selected="true"] {
+  background: white;
+  color: #174c3c;
+  box-shadow: 0 2px 5px #17382a12;
+  font-weight: 700;
+}
+.journey-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.journey .card {
+  padding: 28px;
+  min-width: 0;
+}
+.journey h2 {
+  font-size: 20px;
+  margin: 10px 0 20px;
+}
+.journey h3 {
+  font-size: 16px;
+  margin: 18px 0 8px;
+}
+.journey p {
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 12px 0;
+  color: #526057;
+}
+.journey .journey-muted {
+  color: #7a827a;
+  font-size: 12px;
+}
+.journey label {
+  display: block;
+  font-size: 12px;
+  color: #53645a;
+  margin: 16px 0;
+}
+.journey input:not([type="checkbox"]),
+.journey select {
+  display: block;
+  width: 100%;
+  border: 1px solid #d5ded3;
+  background: #fff;
+  border-radius: 9px;
+  color: #2c4435;
+  padding: 12px;
+  margin-top: 8px;
+  font: inherit;
+  font-size: 14px;
+  min-width: 0;
+}
+.journey-select {
+  max-width: 350px;
+}
+.journey .btn {
+  white-space: normal;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.journey-goal {
+  border-top: 1px solid #e6eae1;
+  padding: 22px 0;
+}
+.journey-goal progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #2c7658;
+  margin: 12px 0;
+}
+.journey-goal > div {
+  font: 12px monospace;
+  color: #56745d;
+  margin-bottom: 12px;
+}
+.journey-goal small {
+  display: block;
+}
+.journey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.journey-action {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.journey-action small {
+  color: #8c7160;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.journey-facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  margin: 24px 0;
+  font-size: 13px;
+}
+.journey-facts dt {
+  color: #69736a;
+}
+.journey-facts dd {
+  font-weight: 700;
+  text-align: right;
+  margin: 0;
+}
+.journey-timeline {
+  list-style: none;
+  margin: 25px 0 0 8px;
+  padding: 0 0 0 22px;
+  border-left: 1px solid #cfdbce;
+}
+.journey-timeline li {
+  position: relative;
+  padding: 0 0 22px;
+}
+.journey-timeline li:before {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  top: 4px;
+  left: -27px;
+  background: #66956c;
+  border: 3px solid #f8faf5;
+  border-radius: 50%;
+}
+.journey-timeline time {
+  font: 11px monospace;
+  color: #879381;
+}
+.journey-timeline p {
+  margin: 6px 0 0;
+  color: #304f37;
+}
+.journey-memory {
+  border-top: 1px solid #e6eae1;
+  padding: 12px 0;
+}
+.journey-memory small {
+  font: 11px monospace;
+  color: #899282;
+}
+.journey-memory p {
+  margin: 5px 0;
+}
+.journey-member {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid #e6eae1;
+  font-size: 12px;
+}
+.journey-member small {
+  display: block;
+  margin-top: 6px;
+  color: #7a827a;
+}
+.journey .journey-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  line-height: 1.7;
+}
+.block-care {
+  background: #e6d7e9;
+}
+.journey :focus-visible {
+  outline: 3px solid #719783;
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .journey-grid {
+    grid-template-columns: 1fr;
+  }
+  .journey-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 20px;
+    gap: 20px;
+  }
+  .journey .card {
+    padding: 22px;
+  }
+  .journey-tabs button {
+    padding: 11px 14px;
+  }
+  .journey-actions {
+    flex-direction: column;
+  }
+  .journey-action {
+    flex: auto;
+  }
+  .journey-summary strong {
+    font-size: 13px;
+  }
+}

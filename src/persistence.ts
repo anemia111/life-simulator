@@ -1,3 +1,7 @@
+import { socialSchema, verifySocial } from "./engine/social/schema";
+import { initialSocial } from "./engine/social/initial";
+import { ensureBond } from "./engine/social/relationships";
+import { seedGoals } from "./engine/goals";
 import { simulationSchema } from "./engine/simulation/schema";
 import { initialSimulation } from "./engine/simulation/initial";
 import { verifySimulation } from "./engine/simulation";
@@ -70,6 +74,7 @@ const block = z.object({
     "work",
     "commute",
     "essential",
+    "care",
     "manual",
     "activity",
     "free",
@@ -80,7 +85,8 @@ const block = z.object({
   targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(5),
+  schemaVersion: z.literal(6),
+  social: socialSchema,
   simulation: simulationSchema,
   spatial: spatialSchema,
   ventures: z.array(ventureSchema),
@@ -302,7 +308,7 @@ export function validateSave(value: unknown): GameState {
     value.schemaVersion === 4;
   if (oldV4) {
     const previous = schema
-      .omit({ simulation: true, schemaVersion: true })
+      .omit({ simulation: true, schemaVersion: true, social: true })
       .extend({ schemaVersion: z.literal(4) })
       .safeParse(value);
     if (!previous.success) throw Error("旧セーブ形式が不正です");
@@ -337,6 +343,55 @@ export function validateSave(value: unknown): GameState {
       f.sites = f.sites.filter(
         (id) => !upgraded.spatial.leases.some((l) => l.propertyId === id),
       );
+    upgraded.schemaVersion = 6;
+    upgraded.social = initialSocial(upgraded);
+    for (const r of upgraded.relationships)
+      ensureBond(upgraded, "player", r.npcId);
+    seedGoals(upgraded);
+    value = upgraded;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 5
+  ) {
+    const legacyResident = simulationSchema.shape.residents.element
+      .omit({ hours: true })
+      .extend({
+        hours: simulationSchema.shape.residents.element.shape.hours.omit({
+          social: true,
+          care: true,
+          essential: true,
+        }),
+      });
+    const legacySim = simulationSchema.extend({
+      residents: z.array(legacyResident),
+    });
+    const previous = schema
+      .omit({ schemaVersion: true, social: true, simulation: true })
+      .extend({ schemaVersion: z.literal(5), simulation: legacySim })
+      .safeParse(value);
+    if (!previous.success) throw Error("v0.5のセーブ形式が不正です");
+    const upgraded = {
+      ...previous.data,
+      schemaVersion: 6,
+      social: null,
+    } as unknown as GameState;
+    upgraded.simulation.residents = upgraded.simulation.residents.map((r) => ({
+      ...r,
+      hours: {
+        ...r.hours,
+        free: r.hours.free - 2,
+        essential: 2,
+        social: 0,
+        care: 0,
+      },
+    }));
+    upgraded.social = initialSocial(upgraded);
+    for (const r of upgraded.relationships)
+      ensureBond(upgraded, "player", r.npcId);
+    seedGoals(upgraded);
     value = upgraded;
   }
   const r = schema.safeParse(value);
@@ -371,6 +426,8 @@ export function validateSave(value: unknown): GameState {
         });
     }
   validateSpatial(s);
+  if (!verifySocial(s))
+    throw Error("人生・人間関係・家族会計の整合性が不正です");
   if (!verifySimulation(s))
     throw Error("世界経済・雇用・入居・帳簿の整合性が不正です");
   if (
@@ -462,7 +519,10 @@ export function validateSave(value: unknown): GameState {
   return s;
 }
 export function parseSave(json: string) {
-  if (json.length > 16000000)
+  if (
+    json.length > 16000000 ||
+    new TextEncoder().encode(json).byteLength > 16000000
+  )
     throw Error("セーブファイルは16MB以内にしてください");
   return validateSave(JSON.parse(json));
 }

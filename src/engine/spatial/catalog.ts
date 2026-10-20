@@ -176,6 +176,23 @@ for (const d of districts) {
       ownerId: "aoba-estates",
       tenantId: null,
     });
+  properties.push({
+    id: d.id + "-family",
+    districtId: d.id,
+    name: d.name + " ファミリー住居",
+    kind: "home",
+    homeStyle: "suburb",
+    x: d.x + 1.5,
+    y: d.y + 0.7,
+    area: 60,
+    monthlyRent: Math.round(48000 * d.rentIndex * cities[0].rentIndex),
+    purchasePrice: 60 * d.landPrice,
+    condition: 85,
+    visibility: 40,
+    allowedIndustries: [],
+    ownerId: "aoba-estates",
+    tenantId: null,
+  });
   for (const [i, k] of (["shop", "office", "warehouse"] as const).entries()) {
     const area = { shop: 40, office: 30, warehouse: 100 }[k],
       rent = { shop: 24000, office: 18000, warehouse: 16000 }[k];

@@ -1,3 +1,4 @@
+import { age } from "../person";
 import { resident as initializeResident } from "../simulation/initial";
 import { releaseSites } from "../spatial/commands";
 import {
@@ -405,7 +406,9 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
           .slice(0, 10),
         payDate: "",
         status: "accepted",
-        clientId: s.npcs[s.days % s.npcs.length].id,
+        clientId: s.npcs.filter((p) => age(p, s.date) >= 18)[
+          s.days % s.npcs.filter((p) => age(p, s.date) >= 18).length
+        ].id,
         rating: 0,
       });
       break;

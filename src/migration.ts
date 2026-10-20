@@ -1,3 +1,5 @@
+import { initialSocial } from "./engine/social/initial";
+import { seedGoals } from "./engine/goals";
 import { initialSimulation } from "./engine/simulation/initial";
 import { initialSpatial } from "./engine/spatial/catalog";
 import { validateLegacy } from "./legacy-save";
@@ -132,5 +134,7 @@ export function migrateV1(value: unknown) {
   ].slice(0, 12);
   s.spatial = initialSpatial(s.housingId, s.started, s.date);
   s.simulation = initialSimulation(s);
+  s.social = initialSocial(s);
+  seedGoals(s);
   return s;
 }

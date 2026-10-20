@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { LocationSummary } from "./ui/LocationSummary";
+const LifeJourney = lazy(() => import("./ui/LifeJourney"));
 const WorldPanel = lazy(() => import("./ui/WorldPanel"));
 const CityMap = lazy(() => import("./ui/CityMap"));
 import { personalEnterpriseProfit } from "./engine/enterprise/accounting";
@@ -75,6 +76,7 @@ const nav = [
   { id: "finance", label: "資産と収支", icon: Wallet },
   { id: "skills", label: "学びとスキル", icon: BookOpen },
   { id: "life", label: "暮らし", icon: House },
+  { id: "journey", label: "人生・目標", icon: Sprout },
   { id: "relations", label: "人間関係", icon: Heart },
   { id: "actions", label: "行動メニュー", icon: Plus },
   { id: "reports", label: "日次・月次レポート", icon: BookOpen },
@@ -1012,8 +1014,8 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 8000000) {
-                setMessage("ファイルは8MB以内にしてください");
+              if (file.size > 16000000) {
+                setMessage("ファイルは16MB以内にしてください");
                 return;
               }
               setMessage(
@@ -1033,11 +1035,11 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.5 ·
-          24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、設備所有、旧セーブ移行を実装しています。
+          v0.6 ·
+          24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、会社、都市マップ、企業AI、人生目標、年表、交際・結婚・基本的な子育てと共同会計、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
-          公開株式市場・M&A、税・社会保険、共同創業、複数都市への移住は未実装です。年齢や事業の赤字による強制終了はありません。
+          公開株式市場・世界企業200〜500社、M&A、税・社会保険、共同創業、離婚・相続・学校制度、複数都市への移住は未実装です。年齢や事業の赤字による強制終了はありません。
         </p>
       </Card>
     </>
@@ -1124,7 +1126,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.5</span>
+            <span>v0.6</span>
           </div>
         </div>
       </aside>
@@ -1184,6 +1186,10 @@ export default function App() {
             <ShiftsPanel g={g} />
           ) : page === "calendar" ? (
             <CalendarPanel g={g} />
+          ) : page === "journey" ? (
+            <Suspense fallback={<p>人生の記録を読み込んでいます…</p>}>
+              <LifeJourney g={g} go={go} />
+            </Suspense>
           ) : page === "relations" ? (
             <RelationsPanel g={g} />
           ) : page === "actions" ? (
@@ -1223,7 +1229,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · PHASE 4</span>
+            <span>LIFE SIMULATOR · PHASE 5</span>
           </footer>
         </main>
         <div className="time-dock">

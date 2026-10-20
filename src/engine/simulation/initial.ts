@@ -13,7 +13,12 @@ export const motives: Record<Motive, string> = {
   saving: "貯蓄志向",
   mobility: "転職積極型",
 };
-export function resident(s: GameState, id: string, index: number): Resident {
+export function resident(
+  s: GameState,
+  id: string,
+  index: number,
+  initialFunds = true,
+): Resident {
   const a: Resident = {
     ...accounts(),
     id,
@@ -29,13 +34,23 @@ export function resident(s: GameState, id: string, index: number): Resident {
     consumed: 0,
     changes: 0,
     lastDecision: "生活を始める",
-    hours: { work: 0, commute: 0, study: 0, business: 0, sleep: 8, free: 16 },
+    hours: {
+      essential: 2,
+      social: 0,
+      care: 0,
+      work: 0,
+      commute: 0,
+      study: 0,
+      business: 0,
+      sleep: 8,
+      free: 14,
+    },
     contacts: [],
     businessId: null,
   };
   book(s, a, "開始時の資産", {
-    cash: 80000 + (index % 5) * 30000,
-    equity: 80000 + (index % 5) * 30000,
+    cash: initialFunds ? 80000 + (index % 5) * 30000 : 0,
+    equity: initialFunds ? 80000 + (index % 5) * 30000 : 0,
   });
   return a;
 }

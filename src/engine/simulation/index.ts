@@ -1,3 +1,13 @@
+import { age } from "../person";
+import {
+  careHours,
+  household,
+  profile,
+  householdClaim,
+} from "../social/selectors";
+import { shared } from "../social/households";
+import { newProfile, newHousehold } from "../social/initial";
+import { activeGoal, learningFocus, seedGoals } from "../goals";
 import { worldIndustries } from "./models";
 import { industryModules } from "../enterprise/registry";
 import { applicantScore } from "./labor";
@@ -115,7 +125,8 @@ function rankJob(
   if (!f || !openings(s, f) || p.skills[j.skill] < j.requirement)
     return -Infinity;
   const trip = route(site(s, r.homeId), site(s, "work-" + j.id));
-  if (8 + 2 + j.hours + trip.hours * 2 > 24) return -Infinity;
+  if (8 + 2 + careHours(s, r.id) + j.hours + trip.hours * 2 > 24)
+    return -Infinity;
   const score = applicantScore(
     p,
     j,
@@ -131,6 +142,11 @@ function rankJob(
 export function npcDecisions(s: GameState) {
   for (const r of s.simulation.residents) {
     const p = s.npcs.find((p) => p.id === r.id)!;
+    if (
+      (s.social?.today.date === s.date && s.social.today.npcHours[r.id]) ||
+      age(p, s.date) < 18
+    )
+      continue;
     if (r.motive === "saving" || r.book.cash < 30000) r.standard = "frugal";
     else if (r.motive === "spending" && r.book.cash > 150000)
       r.standard = "comfortable";
@@ -169,7 +185,11 @@ export function npcDecisions(s: GameState) {
     if (best && best.id !== current?.id && improvement && random(s) < 0.8)
       changeJob(s, r, best.id);
     else r.lastDecision = current ? "勤務を継続" : "技能を学びながら求職";
-    if (s.date.endsWith("-01") && r.book.cash < 60000) {
+    if (
+      s.date.endsWith("-01") &&
+      r.book.cash < 60000 &&
+      !shared(household(s, r.id))
+    ) {
       const cheaper = properties
         .filter((p) => p.kind === "home" && p.homeStyle === "share")
         .sort((a, b) => quotedRent(s, a) - quotedRent(s, b))[0];
@@ -192,8 +212,9 @@ export function npcDecisions(s: GameState) {
       }
     }
     if (
-      r.motive === "enterprise" &&
-      r.book.cash > 250000 &&
+      (r.motive === "enterprise" || activeGoal(s, r.id, "enterprise")) &&
+      r.book.cash >
+        250000 + (50 - (profile(s, r.id)?.riskTolerance ?? 50)) * 1000 &&
       !r.businessId &&
       p.skills.service >= 20
     ) {
@@ -224,12 +245,40 @@ export function npcDecisions(s: GameState) {
 }
 export function npcDay(s: GameState) {
   for (const p of s.npcs)
-    if (!s.simulation.residents.some((r) => r.id === p.id))
-      s.simulation.residents.push(
-        resident(s, p.id, s.simulation.residents.length),
+    if (
+      age(p, s.date) >= 18 &&
+      !s.simulation.residents.some((r) => r.id === p.id)
+    ) {
+      const r = resident(s, p.id, s.simulation.residents.length, false);
+      const h = s.social && household(s, p.id);
+      if (h) {
+        r.homeId = h.homeId;
+        h.children = h.children.filter((id) => id !== p.id);
+        if (!h.adults.includes(p.id)) h.adults.push(p.id);
+        h.claims[p.id] ??= 0;
+        h.contribution[p.id] = 35000;
+      }
+      s.simulation.residents.push(r);
+    }
+  for (const p of s.npcs)
+    if (!profile(s, p.id)) {
+      const id = "household-" + p.id;
+      s.social.households.push(
+        newHousehold(
+          s,
+          id,
+          p.id,
+          s.simulation.residents.find((r) => r.id === p.id)?.homeId ??
+            "campus-share",
+        ),
       );
+      s.social.profiles.push(newProfile(s, p, id));
+    }
+  seedGoals(s);
   for (const r of s.simulation.residents) {
     const p = s.npcs.find((p) => p.id === r.id)!;
+    const care = careHours(s, r.id),
+      social = s.social.today.npcHours[r.id] ?? 0;
     const j = jobs.find((j) => j.id === r.jobId),
       f = s.simulation.firms.find((f) => f.id === j?.employerId);
     let work = 0,
@@ -276,7 +325,7 @@ export function npcDay(s: GameState) {
       (f) => f.status === "active" && f.ownerId === r.id,
     );
     if (own) {
-      business = Math.min(4, Math.max(0, 12 - work - commute));
+      business = Math.min(4, Math.max(0, 12 - work - commute - care - social));
       if (s.date.endsWith("-01") && own.book.cash > 200000) {
         const payout = Math.min(20000, Math.max(0, own.lastMonthProfit));
         if (payout) {
@@ -285,13 +334,19 @@ export function npcDay(s: GameState) {
         }
       }
     }
-    const study = Math.min(2, Math.max(0, 12 - work - commute - business));
-    const skill =
+    const study = Math.min(
+      2,
+      Math.max(0, 12 - work - commute - business - care - social),
+    );
+    const skill = learningFocus(
+      s,
+      r.id,
       r.motive === "enterprise"
         ? "service"
         : r.motive === "income"
           ? "digital"
-          : "craft";
+          : "craft",
+    );
     p.skills[skill] = Math.min(100, p.skills[skill] + study * 0.12);
     p.experience[skill] += study;
     const h = site(s, r.homeId),
@@ -301,24 +356,51 @@ export function npcDay(s: GameState) {
     );
     spend(s, r, living, "食費・日用品", true);
     r.consumed += living;
-    if (s.date.endsWith("-01")) {
+    if (s.date.endsWith("-01") && !shared(household(s, r.id))) {
       const rent = quotedRent(s, h);
       spend(s, r, rent, "月額家賃", true);
       r.consumed += rent;
     }
-    if (s.date.endsWith("-10")) spend(s, r, 4500, "光熱費", true);
-    if (s.date.endsWith("-15")) spend(s, r, 2500, "通信費", true);
+    if (s.date.endsWith("-10") && !shared(household(s, r.id)))
+      spend(s, r, 4500, "光熱費", true);
+    if (s.date.endsWith("-15") && !shared(household(s, r.id)))
+      spend(s, r, 2500, "通信費", true);
     settle(s, r);
     r.hours = {
       work,
       commute,
       study,
       business,
+      essential: 2,
+      social,
+      care,
       sleep: 8,
-      free: 16 - work - commute - study - business,
+      free: 14 - work - commute - study - business - social - care,
     };
+    p.energy = clamp(
+      p.energy +
+        8 * 4 +
+        r.hours.free -
+        work * 3 -
+        commute * 2 -
+        business * 2 -
+        study * 2 -
+        care * 3 -
+        social,
+      0,
+      100,
+    );
+    p.health = clamp(p.health + (p.energy < 15 ? -0.2 : 0.05), 5, 100);
+    p.satisfaction = clamp(
+      p.satisfaction +
+        standards[r.standard].satisfaction -
+        (r.book.debt > 0 ? 0.3 : 0),
+      0,
+      100,
+    );
     compact(r);
   }
+  s.social.today.npcProcessed = true;
 }
 export function closeFirm(s: GameState, f: AIFirm) {
   for (const id of [...f.employees]) {
@@ -782,6 +864,7 @@ export function verifySimulation(s: GameState) {
 }
 
 export const residentNetWorth = (s: GameState, r: Resident) =>
+  householdClaim(s, r.id) +
   r.book.cash +
   r.book.inventory +
   r.book.equipment +

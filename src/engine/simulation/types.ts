@@ -18,6 +18,9 @@ export interface Resident extends Accounts {
     commute: number;
     study: number;
     business: number;
+    essential: number;
+    social: number;
+    care: number;
     sleep: number;
     free: number;
   };

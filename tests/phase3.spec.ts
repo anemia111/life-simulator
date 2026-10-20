@@ -96,7 +96,7 @@ test("マップで引越し→求人応募→小売の物件入居→販売→�
   await expect(page.getByRole("alert")).toHaveCount(0);
   await page.screenshot({ path: "../phase3-desktop.png", fullPage: true });
   const state = await exportState(page);
-  expect(state.schemaVersion).toBe(5);
+  expect(state.schemaVersion).toBe(6);
   expect(state.spatial.homePropertyId).toBe("residential-share");
   expect(
     state.spatial.leases.some(

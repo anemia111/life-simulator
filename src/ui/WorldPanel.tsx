@@ -1,3 +1,4 @@
+import { goalRegistry } from "../engine/goals";
 import { residentNetWorth } from "../engine/simulation";
 import { useState } from "react";
 import type { GameState } from "../engine/types";
@@ -367,6 +368,9 @@ export default function WorldPanel({
             <section className="world-card world-detail">
               <span className="eyebrow">A LIFE IN AOBA</span>
               <h2>{person.name}</h2>
+              <button className="outline" onClick={() => go("journey")}>
+                人物の目標・人生年表を見る
+              </button>
               <p>
                 {age(person, g.date)}歳 · {motives[r.motive]}
               </p>
@@ -396,7 +400,12 @@ export default function WorldPanel({
                     .join(" / ")}
                 </dd>
                 <dt>目標</dt>
-                <dd>{r.goal}</dd>
+                <dd>
+                  {g.social.goals
+                    .filter((v) => v.actorId === r.id && v.status === "active")
+                    .map((v) => goalRegistry.get(v.definitionId)!.name)
+                    .join(" / ") || "目標を達成し、日々を暮らす"}
+                </dd>
                 <dt>生活水準</dt>
                 <dd>
                   {

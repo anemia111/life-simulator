@@ -1,3 +1,4 @@
+import type { SocialState } from "./social/types";
 import type { Simulation } from "./simulation/types";
 import type { SpatialState } from "./spatial/types";
 import type { Enterprise, Company, EnterpriseInput } from "./enterprise/types";
@@ -153,7 +154,14 @@ export interface MonthReport {
 }
 export interface TimeBlock {
   kind:
-    "sleep" | "work" | "commute" | "essential" | "manual" | "activity" | "free";
+    | "sleep"
+    | "work"
+    | "commute"
+    | "essential"
+    | "care"
+    | "manual"
+    | "activity"
+    | "free";
   label: string;
   start: number;
   hours: number;
@@ -189,7 +197,8 @@ export interface Routine {
   socialTarget: string | null;
 }
 export interface GameState {
-  schemaVersion: 5;
+  schemaVersion: 6;
+  social: SocialState;
   simulation: Simulation;
   spatial: SpatialState;
   ventures: Enterprise[];

@@ -1,3 +1,18 @@
+import { addGoal } from "./goals";
+import { profile, npcFree, bondFor } from "./social/selectors";
+import {
+  reserveConversation,
+  converse,
+  romanceReason,
+  startDating,
+  endDating,
+} from "./social/relationships";
+import {
+  contribute,
+  marry,
+  welcomeChild,
+  adoptionReason,
+} from "./social/households";
 import {
   moveToProperty,
   leaseProperty,
@@ -386,6 +401,16 @@ export function actionUnavailable(
   if (!def) return "行動が見つかりません";
   if (hours !== undefined && hours < (def.minHours ?? 0.5))
     return "行動に必要な時間が足りません";
+  if (
+    ["socialize", "meet-npc", "support-npc", "date-npc", "marry-npc"].includes(
+      id,
+    )
+  ) {
+    const npcId = target.id ?? s.routine.socialTarget;
+    const needed = id === "socialize" ? (hours ?? 1) : 1;
+    if (npcId && npcFree(s, npcId) < needed)
+      return "相手の勤務・生活予定が埋まっています。別の日に交流してください";
+  }
   return (
     def.condition(s, target) ??
     (liquid(s) < def.cost(s, target) ? "行動に必要な資金が足りません" : null)
@@ -475,4 +500,142 @@ add({
     const npc = s.simulation.residents.find((r) => r.id === t.id)!;
     npc.contacts = [...new Set([...npc.contacts, "player"])].slice(-30);
   },
+});
+
+add({
+  id: "life-goal",
+  label: "人生の目標を設定",
+  target: "person",
+  effect: (s, t) => {
+    addGoal(s, "player", t.id!, t.amount);
+  },
+});
+add({
+  id: "life-goal-pause",
+  label: "目標を休止・再開",
+  target: "person",
+  effect: (s, t) => {
+    const g = s.social.goals.find(
+      (g) => g.id === t.id && g.actorId === "player",
+    );
+    if (!g || g.status === "achieved")
+      throw Error("変更できる目標ではありません");
+    if (
+      g.status === "paused" &&
+      s.social.goals.some(
+        (v) =>
+          v.id !== g.id &&
+          v.actorId === g.actorId &&
+          v.definitionId === g.definitionId &&
+          v.status === "active",
+      )
+    )
+      throw Error("同じ目標が取り組み中です");
+    g.status = g.status === "active" ? "paused" : "active";
+  },
+});
+add({
+  id: "support-npc",
+  label: "相談して支え合う",
+  category: "social",
+  hours: 1,
+  target: "npc",
+  condition: (s, t) =>
+    !bondFor(s, "player", t.id!) ? "まず知り合ってください" : null,
+  effect: (s, t) => {
+    reserveConversation(s, t.id!, 1);
+    converse(s, "player", t.id!, 1, "support");
+  },
+});
+add({
+  id: "date-npc",
+  label: "交際を相談する",
+  category: "social",
+  hours: 1,
+  target: "npc",
+  condition: (s, t) => romanceReason(s, "player", t.id!),
+  effect: (s, t) => {
+    reserveConversation(s, t.id!, 1);
+    startDating(s, "player", t.id!);
+  },
+});
+add({
+  id: "marry-npc",
+  label: "結婚・共同生活を始める",
+  category: "social",
+  hours: 2,
+  target: "npc",
+  cost: () => 5000,
+  condition: (s, t) => romanceReason(s, "player", t.id!, true),
+  effect: (s, t) => {
+    reserveConversation(s, t.id!, 1);
+    marry(s, "player", t.id!);
+  },
+});
+add({
+  id: "romance-preference",
+  label: "交際への希望を変更",
+  target: "person",
+  effect: (s, t) => {
+    if (!["open", "friendship"].includes(t.value!))
+      throw Error("希望が不正です");
+    profile(s, "player").romance = t.value as "open" | "friendship";
+  },
+});
+add({
+  id: "household-deposit",
+  label: "共同資金へ積立",
+  target: "account",
+  effect: (s, t) => contribute(s, "player", t.amount!),
+});
+add({
+  id: "household-withdraw",
+  label: "共同資金から返還",
+  target: "account",
+  effect: (s, t) => contribute(s, "player", t.amount!, true),
+});
+add({
+  id: "household-auto",
+  label: "毎月の共同積立を設定",
+  target: "account",
+  effect: (s, t) => {
+    if (!Number.isSafeInteger(t.amount) || t.amount! < 0 || t.amount! > 1000000)
+      throw Error("毎月の積立は0〜100万円の整数です");
+    const h = s.social.households.find(
+      (h) => h.id === profile(s, "player").householdId,
+    )!;
+    h.contribution.player = t.amount!;
+  },
+});
+add({
+  id: "adopt-child",
+  label: "子どもを家族に迎える",
+  category: "social",
+  hours: 2,
+  target: "person",
+  condition: (s) => adoptionReason(s),
+  effect: (s, t) => welcomeChild(s, "player", t.value ?? "青葉 そら"),
+});
+add({
+  id: "npc-life-policy",
+  label: "NPCの交際・家族方針を変更",
+  target: "none",
+  effect: (s, t) => {
+    if (t.id !== "npcRelationships" && t.id !== "npcFamily")
+      throw Error("方針が不正です");
+    s.social.policy[t.id] = t.value === "on";
+  },
+});
+
+add({
+  id: "end-dating",
+  label: "交際を終える",
+  category: "social",
+  hours: 1,
+  target: "npc",
+  condition: (s, t) =>
+    bondFor(s, "player", t.id!)?.status === "dating"
+      ? null
+      : "交際中の相手を選んでください",
+  effect: (s, t) => endDating(s, "player", t.id!),
 });

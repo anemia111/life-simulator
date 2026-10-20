@@ -1,3 +1,4 @@
+import { age } from "../person";
 import type { IndustryModule } from "./types";
 import { book } from "./accounting";
 export const freelance: IndustryModule = {
@@ -24,7 +25,9 @@ export const freelance: IndustryModule = {
         .at(-1);
       const client =
         s.npcs.find((p) => p.id === prior?.clientId) ??
-        s.npcs[s.days % s.npcs.length];
+        s.npcs.filter((p) => age(p, s.date) >= 18)[
+          s.days % s.npcs.filter((p) => age(p, s.date) >= 18).length
+        ];
       v.orders.push({
         id: "order-" + ++s.sequence,
         price: v.price,

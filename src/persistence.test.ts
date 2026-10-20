@@ -29,6 +29,9 @@ describe("セーブ境界", () => {
     ).toThrow();
     expect(() => validateSave({ ...s, date: "2026-02-30" })).toThrow();
     expect(() => parseSave("not json")).toThrow();
+    expect(() => parseSave(JSON.stringify("あ".repeat(5400000)))).toThrow(
+      /16MB/,
+    );
     expect(() => parseSave(" ".repeat(8000001))).toThrow();
   });
   it("IndexedDBの3枠が独立し同時保存は順番を保持する", async () => {

@@ -1,3 +1,4 @@
+import { household } from "../social/selectors";
 import { quotedRent } from "../simulation/market";
 import { jobs, makeContract } from "../career";
 import { assertSchedule } from "../schedule";
@@ -57,6 +58,12 @@ export function planMove(s: GameState, id: string) {
     ).commute,
   }));
   let reason = "";
+  const family = s.social && household(s, "player");
+  if (
+    family?.children.length &&
+    (p.homeStyle === "share" || p.area < 20 + family.children.length * 10)
+  )
+    reason = "家族で暮らす広さのある独立した住居が必要です";
   try {
     assertSchedule(s, contracts);
   } catch (e) {
