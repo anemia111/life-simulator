@@ -1,3 +1,4 @@
+import type { Enterprise, Company, EnterpriseInput } from "./enterprise/types";
 export type Skill = "service" | "craft" | "digital";
 export type Action = string;
 export interface Person {
@@ -186,7 +187,9 @@ export interface Routine {
   socialTarget: string | null;
 }
 export interface GameState {
-  schemaVersion: 2;
+  schemaVersion: 3;
+  ventures: Enterprise[];
+  companies: Company[];
   person: Person;
   npcs: Person[];
   date: string;
@@ -274,8 +277,10 @@ export type ActionTarget = {
   value?: string;
   price?: number;
   contractId?: string;
+  enterprise?: EnterpriseInput;
 };
 export type Command =
+  | { type: "enterprise"; input: EnterpriseInput }
   | { type: "advance"; days: number }
   | { type: "apply"; jobId: string }
   | { type: "quit"; contractId?: string }

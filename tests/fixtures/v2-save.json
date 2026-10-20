@@ -1,0 +1,1112 @@
+{
+  "schemaVersion": 2,
+  "person": {
+    "id": "player",
+    "name": "Phase 1引継ぎ",
+    "birthDate": "2008-04-01",
+    "energy": 100,
+    "health": 100,
+    "sleepDebt": 0,
+    "satisfaction": 71.75,
+    "skills": {
+      "service": 0,
+      "craft": 0,
+      "digital": 2.2000000000000006
+    },
+    "experience": {
+      "service": 0,
+      "craft": 0,
+      "digital": 0
+    },
+    "occupation": "自由な暮らし",
+    "employerId": null,
+    "personality": "curious"
+  },
+  "npcs": [
+    {
+      "id": "npc-cafe",
+      "name": "木村 さとし",
+      "birthDate": "1985-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 40,
+        "craft": 35,
+        "digital": 30
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "カフェスタッフ / 店長",
+      "employerId": "cafe-co",
+      "personality": "steady"
+    },
+    {
+      "id": "npc-shop",
+      "name": "森 ゆい",
+      "birthDate": "1986-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 41,
+        "craft": 36,
+        "digital": 31
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "書店スタッフ / 店長",
+      "employerId": "shop-co",
+      "personality": "outgoing"
+    },
+    {
+      "id": "npc-design",
+      "name": "石井 あきら",
+      "birthDate": "1987-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 42,
+        "craft": 37,
+        "digital": 32
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "制作アシスタント / 店長",
+      "employerId": "design-co",
+      "personality": "curious"
+    },
+    {
+      "id": "npc-convenience",
+      "name": "小林 なつ",
+      "birthDate": "1988-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 43,
+        "craft": 38,
+        "digital": 33
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "コンビニ夕方スタッフ / 店長",
+      "employerId": "mart-co",
+      "personality": "steady"
+    },
+    {
+      "id": "npc-restaurant",
+      "name": "山田 まこと",
+      "birthDate": "1989-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 44,
+        "craft": 39,
+        "digital": 34
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "レストランホール / 店長",
+      "employerId": "dining-co",
+      "personality": "outgoing"
+    },
+    {
+      "id": "npc-office",
+      "name": "高橋 ひかり",
+      "birthDate": "1990-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 45,
+        "craft": 40,
+        "digital": 35
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "事務サポート / 店長",
+      "employerId": "office-co",
+      "personality": "curious"
+    },
+    {
+      "id": "npc-warehouse",
+      "name": "佐藤 たくみ",
+      "birthDate": "1991-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 46,
+        "craft": 41,
+        "digital": 36
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "倉庫軽作業 / 店長",
+      "employerId": "logistics-co",
+      "personality": "steady"
+    },
+    {
+      "id": "npc-delivery",
+      "name": "中村 みお",
+      "birthDate": "1992-06-15",
+      "energy": 100,
+      "health": 100,
+      "sleepDebt": 0,
+      "satisfaction": 70,
+      "skills": {
+        "service": 47,
+        "craft": 42,
+        "digital": 37
+      },
+      "experience": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      },
+      "occupation": "地域配送スタッフ / 店長",
+      "employerId": "delivery-co",
+      "personality": "outgoing"
+    }
+  ],
+  "date": "2026-04-08",
+  "started": "2026-04-01",
+  "days": 7,
+  "cash": 75400,
+  "bank": 0,
+  "debt": 0,
+  "loan": 0,
+  "employments": [],
+  "employment": null,
+  "careerHistory": [],
+  "applications": [],
+  "relationships": [],
+  "vacancies": [
+    {
+      "jobId": "cafe",
+      "employerId": "cafe-co",
+      "openings": 2,
+      "competition": 1,
+      "threshold": 40
+    },
+    {
+      "jobId": "shop",
+      "employerId": "shop-co",
+      "openings": 2,
+      "competition": 1.5,
+      "threshold": 48
+    },
+    {
+      "jobId": "design",
+      "employerId": "design-co",
+      "openings": 2,
+      "competition": 2,
+      "threshold": 55
+    },
+    {
+      "jobId": "convenience",
+      "employerId": "mart-co",
+      "openings": 2,
+      "competition": 1.6,
+      "threshold": 46
+    },
+    {
+      "jobId": "restaurant",
+      "employerId": "dining-co",
+      "openings": 2,
+      "competition": 1.4,
+      "threshold": 45
+    },
+    {
+      "jobId": "office",
+      "employerId": "office-co",
+      "openings": 2,
+      "competition": 2,
+      "threshold": 52
+    },
+    {
+      "jobId": "warehouse",
+      "employerId": "logistics-co",
+      "openings": 2,
+      "competition": 1,
+      "threshold": 40
+    },
+    {
+      "jobId": "delivery",
+      "employerId": "delivery-co",
+      "openings": 2,
+      "competition": 1.4,
+      "threshold": 48
+    }
+  ],
+  "business": {
+    "industryId": "writing",
+    "price": 2500,
+    "level": 1,
+    "active": true,
+    "revenue": 27500,
+    "costs": 3200,
+    "units": 11,
+    "last": {
+      "demand": 5,
+      "capacity": 1,
+      "units": 1,
+      "revenue": 2500,
+      "costs": 400,
+      "profit": 2100
+    }
+  },
+  "organizations": [
+    {
+      "id": "cafe-co",
+      "name": "喫茶 こもれび",
+      "kind": "employer",
+      "ownerId": "npc-cafe",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "shop-co",
+      "name": "青葉ブックストア",
+      "kind": "employer",
+      "ownerId": "npc-shop",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "design-co",
+      "name": "スタジオ ノート",
+      "kind": "employer",
+      "ownerId": "npc-design",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "mart-co",
+      "name": "あおばマート",
+      "kind": "employer",
+      "ownerId": "npc-convenience",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "dining-co",
+      "name": "食堂 はなみずき",
+      "kind": "employer",
+      "ownerId": "npc-restaurant",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "office-co",
+      "name": "青葉ビジネスサービス",
+      "kind": "employer",
+      "ownerId": "npc-office",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "logistics-co",
+      "name": "青葉ロジスティクス",
+      "kind": "employer",
+      "ownerId": "npc-warehouse",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "delivery-co",
+      "name": "まちのデリバリー",
+      "kind": "employer",
+      "ownerId": "npc-delivery",
+      "cash": 552500,
+      "dailyRevenue": 20000,
+      "dailyCost": 12500
+    },
+    {
+      "id": "player-business",
+      "name": "小さな制作室",
+      "kind": "sole-trader",
+      "ownerId": "player",
+      "cash": 0,
+      "dailyRevenue": 0,
+      "dailyCost": 0
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-3",
+      "ownerId": "player-business",
+      "kind": "equipment",
+      "name": "記事・文章制作設備",
+      "level": 1,
+      "cost": 20000
+    }
+  ],
+  "action": "business",
+  "routine": {
+    "sleepHours": 8,
+    "activityHours": 2,
+    "weekendHours": 6,
+    "weekdayAction": "business",
+    "weekendAction": "business",
+    "socialTarget": null
+  },
+  "manualActions": [],
+  "housingId": "share",
+  "livingStandard": "balanced",
+  "ledger": [
+    {
+      "id": 1,
+      "date": "2026-04-01",
+      "label": "入居月の家賃",
+      "kind": "living",
+      "amount": -24000,
+      "category": "expense",
+      "cashDelta": -24000,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 76000,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 2,
+      "date": "2026-04-01",
+      "label": "小さな制作室 開業設備",
+      "kind": "capital",
+      "amount": -20000,
+      "category": "expense",
+      "cashDelta": -20000,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 56000,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 4,
+      "date": "2026-04-01",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -400,
+      "category": "expense",
+      "cashDelta": -400,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 55600,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 5,
+      "date": "2026-04-01",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 2500,
+      "category": "income",
+      "cashDelta": 2500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 58100,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 6,
+      "date": "2026-04-01",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 57400,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 7,
+      "date": "2026-04-02",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -400,
+      "category": "expense",
+      "cashDelta": -400,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 57000,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 8,
+      "date": "2026-04-02",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 2500,
+      "category": "income",
+      "cashDelta": 2500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 59500,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 9,
+      "date": "2026-04-02",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 58800,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 10,
+      "date": "2026-04-03",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -400,
+      "category": "expense",
+      "cashDelta": -400,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 58400,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 11,
+      "date": "2026-04-03",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 2500,
+      "category": "income",
+      "cashDelta": 2500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 60900,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 12,
+      "date": "2026-04-03",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 60200,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 13,
+      "date": "2026-04-04",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -600,
+      "category": "expense",
+      "cashDelta": -600,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 59600,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 14,
+      "date": "2026-04-04",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 7500,
+      "category": "income",
+      "cashDelta": 7500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 67100,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 15,
+      "date": "2026-04-04",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 66400,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 16,
+      "date": "2026-04-05",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -600,
+      "category": "expense",
+      "cashDelta": -600,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 65800,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 17,
+      "date": "2026-04-05",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 7500,
+      "category": "income",
+      "cashDelta": 7500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 73300,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 18,
+      "date": "2026-04-05",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 72600,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 19,
+      "date": "2026-04-06",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -400,
+      "category": "expense",
+      "cashDelta": -400,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 72200,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 20,
+      "date": "2026-04-06",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 2500,
+      "category": "income",
+      "cashDelta": 2500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 74700,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 21,
+      "date": "2026-04-06",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 74000,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 22,
+      "date": "2026-04-07",
+      "label": "事業：材料費・運営費",
+      "kind": "business-cost",
+      "amount": -400,
+      "category": "expense",
+      "cashDelta": -400,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 73600,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 23,
+      "date": "2026-04-07",
+      "label": "事業：記事・文章制作 売上",
+      "kind": "business-revenue",
+      "amount": 2500,
+      "category": "income",
+      "cashDelta": 2500,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 76100,
+      "bankAfter": 0,
+      "debtAfter": 0
+    },
+    {
+      "id": 24,
+      "date": "2026-04-07",
+      "label": "食費・日用品（標準）",
+      "kind": "living",
+      "amount": -700,
+      "category": "expense",
+      "cashDelta": -700,
+      "bankDelta": 0,
+      "debtDelta": 0,
+      "cashAfter": 75400,
+      "bankAfter": 0,
+      "debtAfter": 0
+    }
+  ],
+  "checkpoint": {
+    "cash": 100000,
+    "bank": 0,
+    "debt": 0
+  },
+  "reports": [
+    {
+      "month": "2026-04",
+      "opening": {
+        "cash": 100000,
+        "bank": 0,
+        "debt": 0
+      },
+      "closing": {
+        "cash": 75400,
+        "bank": 0,
+        "debt": 0
+      },
+      "earned": 0,
+      "wages": 0,
+      "sales": 27500,
+      "businessCosts": 3200,
+      "living": 28900,
+      "capital": 20000,
+      "interest": 0,
+      "otherIncome": 0,
+      "otherExpenses": 0,
+      "cashFlow": -24600
+    }
+  ],
+  "sequence": 24,
+  "history": [
+    {
+      "date": "2026-04-01",
+      "cash": 57400,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 77400,
+      "earned": 0,
+      "spending": 24700,
+      "sales": 2500,
+      "profit": 2100,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 10,
+      "activityHours": 2,
+      "energy": 100,
+      "satisfaction": 70.25,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 2,
+          "kind": "manual",
+          "label": "個人事業を開業"
+        },
+        {
+          "start": 12,
+          "hours": 2,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 14,
+          "hours": 10,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 2時間"
+      ]
+    },
+    {
+      "date": "2026-04-02",
+      "cash": 58800,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 78800,
+      "earned": 0,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 12,
+      "activityHours": 2,
+      "energy": 100,
+      "satisfaction": 70.5,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 2,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 12,
+          "hours": 12,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 2時間"
+      ]
+    },
+    {
+      "date": "2026-04-03",
+      "cash": 60200,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 80200,
+      "earned": 0,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 12,
+      "activityHours": 2,
+      "energy": 100,
+      "satisfaction": 70.75,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 2,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 12,
+          "hours": 12,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 2時間"
+      ]
+    },
+    {
+      "date": "2026-04-04",
+      "cash": 66400,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 86400,
+      "earned": 0,
+      "spending": 700,
+      "sales": 7500,
+      "profit": 6900,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 8,
+      "activityHours": 6,
+      "energy": 93.6,
+      "satisfaction": 71,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 6,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 16,
+          "hours": 8,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 6時間"
+      ]
+    },
+    {
+      "date": "2026-04-05",
+      "cash": 72600,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 92600,
+      "earned": 0,
+      "spending": 700,
+      "sales": 7500,
+      "profit": 6900,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 8,
+      "activityHours": 6,
+      "energy": 93.6,
+      "satisfaction": 71.25,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 6,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 16,
+          "hours": 8,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 6時間"
+      ]
+    },
+    {
+      "date": "2026-04-06",
+      "cash": 74000,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 94000,
+      "earned": 0,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 12,
+      "activityHours": 2,
+      "energy": 100,
+      "satisfaction": 71.5,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 2,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 12,
+          "hours": 12,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 2時間"
+      ]
+    },
+    {
+      "date": "2026-04-07",
+      "cash": 75400,
+      "bank": 0,
+      "debt": 0,
+      "netWorth": 95400,
+      "earned": 0,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100,
+      "workHours": 0,
+      "sleepHours": 8,
+      "studyHours": 0,
+      "commuteHours": 0,
+      "freeHours": 12,
+      "activityHours": 2,
+      "energy": 100,
+      "satisfaction": 71.75,
+      "blocks": [
+        {
+          "start": 0,
+          "hours": 8,
+          "kind": "sleep",
+          "label": "睡眠"
+        },
+        {
+          "start": 8,
+          "hours": 2,
+          "kind": "essential",
+          "label": "食事・身支度"
+        },
+        {
+          "start": 10,
+          "hours": 2,
+          "kind": "activity",
+          "label": "事業に取り組む"
+        },
+        {
+          "start": 12,
+          "hours": 12,
+          "kind": "free",
+          "label": "自由時間"
+        }
+      ],
+      "events": [
+        "事業に取り組む 2時間"
+      ]
+    }
+  ],
+  "world": {
+    "city": "青葉市",
+    "population": 120000,
+    "economy": 1,
+    "costIndex": 1,
+    "competitorPrice": 1,
+    "competitorQuality": 1
+  },
+  "totals": {
+    "wages": 0,
+    "revenue": 27500,
+    "businessProfit": 24300,
+    "living": 28900
+  },
+  "notices": [
+    "小さな制作室を開業しました",
+    "青葉市で、新しい毎日が始まります"
+  ]
+}

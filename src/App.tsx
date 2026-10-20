@@ -1,3 +1,5 @@
+import { personalEnterpriseProfit } from "./engine/enterprise/accounting";
+import { EnterprisePanel, CompanyPanel } from "./ui/Phase2";
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
@@ -62,6 +64,7 @@ const nav = [
   { id: "shifts", label: "仕事・シフト管理", icon: Clock },
   { id: "calendar", label: "カレンダー", icon: CalendarDays },
   { id: "business", label: "事業を営む", icon: Store },
+  { id: "companies", label: "会社・所有権", icon: Building2 },
   { id: "finance", label: "資産と収支", icon: Wallet },
   { id: "skills", label: "学びとスキル", icon: BookOpen },
   { id: "life", label: "暮らし", icon: House },
@@ -402,7 +405,9 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
             <TrendingUp size={16} />
             事業の累計利益
           </span>
-          <strong>{yen(g.totals.businessProfit)}</strong>
+          <strong>
+            {yen(g.totals.businessProfit + personalEnterpriseProfit(g))}
+          </strong>
           <small>{b ? i?.name : "あなたの可能性は、これから。"}</small>
         </Card>
         <Card>
@@ -1021,11 +1026,11 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.2 ·
+          v0.3 ·
           24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、設備所有、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
-          法人設立、株式売買、税・社会保険、共同創業、複数都市は未実装です。年齢や事業の赤字による強制終了はありません。
+          公開株式市場・M&A、税・社会保険、共同創業、複数都市への移住は未実装です。年齢や事業の赤字による強制終了はありません。
         </p>
       </Card>
     </>
@@ -1112,7 +1117,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.2</span>
+            <span>v0.3</span>
           </div>
         </div>
       </aside>
@@ -1177,7 +1182,18 @@ export default function App() {
           ) : page === "reports" ? (
             <ReportsPanel g={g} />
           ) : page === "business" ? (
-            <Business key={g.business?.industryId ?? "none"} g={g} />
+            <>
+              <EnterprisePanel g={g} />
+              <div className="legacy-business">
+                <span className="eyebrow">PHASE 0 / 1 COMPATIBILITY</span>
+                <p>
+                  既存の制作・食品事業：従来の自動行動「事業に取り組む」で運営します。新しい副業とは別の予定を選択できます。
+                </p>
+                <Business key={g.business?.industryId ?? "none"} g={g} />
+              </div>
+            </>
+          ) : page === "companies" ? (
+            <CompanyPanel g={g} />
           ) : page === "finance" ? (
             <Finance g={g} />
           ) : page === "skills" ? (
@@ -1189,7 +1205,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · PHASE 1</span>
+            <span>LIFE SIMULATOR · PHASE 2</span>
           </footer>
         </main>
         <div className="time-dock">

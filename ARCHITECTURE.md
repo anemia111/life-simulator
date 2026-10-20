@@ -1,4 +1,4 @@
-# Phase 1 アーキテクチャ
+# Phase 2 アーキテクチャ
 
 ## 境界
 
@@ -19,13 +19,13 @@
 | Market      | market.ts                                      | 需要・品質・供給・資金制約                      |
 | AI          | ai.ts / relationships.ts                       | 競合価格決定、職場での出会いと交流              |
 | Actions     | actions.ts                                     | 汎用行動定義・条件・費用・時間・効果の実行境界  |
-| Persistence | persistence.ts / migration.ts / legacy-save.ts | v2検証、v1移行、IndexedDBと3枠                  |
+| Persistence | persistence.ts / migration.ts / legacy-save.ts | v3検証、v1/v2移行、IndexedDBと3枠                  |
 
 `src/ui/Phase1.tsx` に求人、シフト、生活、財務、関係、カレンダー、レポートを分離。既存の開始画面・ダッシュボード・事業・保存画面は `App.tsx` から接続。Zustandの `store.ts` は状態遷移と保存要求のみを担当する。
 
 ## 汎用データ
 
-Person、Organization、Asset、EmploymentContract、Offering、Relationship、Vacancy、LedgerEntryをIDで関連付ける。勤務は `employments[]` が正規データ。`employment` は旧UI互換の読み取り別名で、コマンドと読込時に先頭契約へ同期する。複数事業は今回の対象外。
+Person、Organization、Asset、EmploymentContract、Offering、Relationship、Vacancy、LedgerEntryをIDで関連付ける。勤務は `employments[]` が正規データ。`employment` は旧UI互換の読み取り別名で、コマンドと読込時に先頭契約へ同期する。新事業は `ventures[]`、会社は `companies[]`。`ownerId` は本人または会社IDを指す。会社の保有事業・従業員・資産は参照で集計し重複保存しない。
 
 企業は自分の求人・募集枠・採用点・倍率を持つ。日次の基礎売上・費用とプレイヤーの給与発生を経営資金に反映し、資金不足なら募集停止する。NPC企業の全商品市場や従業員給与の完全シミュレーションではない。職場人物との信頼は採用と評価に作用する。
 
@@ -33,7 +33,7 @@ Person、Organization、Asset、EmploymentContract、Offering、Relationship、V
 
 `ActionDefinition` にID、カテゴリ、対象、条件、必要時間（契約依存のdurationも可）、費用、結果説明、effectを定義して `registerAction` する。日次オーケストレーターは選択IDから実行するため、学習・生活・交流・事業などの追加で中心ループを変更しない。応募・退職・預入・引出・借入・返済・住み替え・設備投資も同じ実行境界を通す。勤務時間は契約を参照する。
 
-手動行動は自由時間を予約し、効果を即時適用。自動行動は日次に一度まとめて実行する。分刻みのイベント順序は対象外で、日次の予算と結果を管理する。新しい業種は `industries/` へモジュールを追加する。現在の会社数・市場は簡略化している。
+手動行動は自由時間を予約し、効果を即時適用。自動行動は日次に一度まとめて実行する。分刻みのイベント順序は対象外で、日次の予算と結果を管理する。旧2業種は `industries/` で互換維持。新業界は `enterprise/registry.ts` へモジュール登録する。現在の会社数・市場は簡略化している。
 
 ## 日次処理
 
@@ -47,6 +47,20 @@ Person、Organization、Asset、EmploymentContract、Offering、Relationship、V
 
 ## 保存と互換性
 
-保存版 `schemaVersion=2`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限8MB。
+保存版 `schemaVersion=3`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限8MB。
 
 v1は旧スキーマで検証後、現金・債務・給与債権・事業・設備・能力・日付を維持して変換。旧元帳から金融チェックポイントを復元し、以後の残高照合を可能にする。記録のなかった勤務時間は勤務日数×所定時間で推定し、旧日次の時間配分・債務残高は未記録であると明記する。移行以前の月次情報は残された元帳・日次履歴の範囲に限る。
+
+## Phase 2 の実装境界
+
+`engine/enterprise/types.ts` は事業・会社・在庫・案件・顧客・社員・帳簿・業界契約を定義。`accounting.ts` は整数円の複式整合・差分元帳・月次・連結・持分純資産、`market.ts` は共通需要、`index.ts` は設立・資金・所有権・経営指示と日次オーケストレーション。`freelance.ts` / `retail.ts` / `software.ts` は固有計算、`registry.ts` は登録、`schema.ts` は保存構造を担当する。UI `ui/Phase2.tsx` はコマンド送信と表示のみ。
+
+`enterprise-work` は本人の時間消費と体力、`enterprise-manage` は経営指示の手動時間を共通Action境界で検証。日次ループは業界を分岐せず `runEnterpriseDay` を必ず一度実行し、本人の予定が休養でも売掛金・返品・期限切れ案件・スタッフ等は進む。登録モジュールの `obligations` は休業・閉鎖時にも実行し、`tick` は営業中の生産販売だけを担う。
+
+新事業の資金は個人の財布と分け、本人の会計への出入りはFinance.post、事業・会社の残高はenterprise.bookを通す。個人所有事業の負債はその帳簿内に残り、純資産を通じて本人に全額帰属する（生活債務と区分）。法人事業は本人財務に直接影響せず、株式持分の簿価としてのみ反映する。
+
+会社の集計では本体と保有事業の資金移動の元入金を相殺。個人事業の法人移管時に売上・費用の取得基準値を記録し、移管前の利益を会社利益・配当可能利益から除外する。月次には記帳時の所有者を保存するため、移管後も過去の個人売上を法人売上に付け替えない。
+
+v2は既存状態を保ったまま新配列を空で追加する。v1の従来変換もそのまま利用。旧 `business` / `assets` は互換データとして維持し、旧2業種の経済ルールを変更しない。旧事業の新法人移管は未対応（新3業種のみ対応）。将来の完全統一は別移行として扱う。
+
+業界追加の契約と実装例は `INDUSTRY_MODULES.md`。業界固有UI・固有手動操作は追加が必要だが、共通会社運営・時間・会計・保存を作り直さない。

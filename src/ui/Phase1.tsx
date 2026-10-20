@@ -1,3 +1,5 @@
+import { PersonalBusinessFinance } from "./Phase2";
+import { enterpriseWealth } from "../engine/enterprise/accounting";
 import { useState } from "react";
 import type { GameState, EmploymentContract, Routine } from "../engine/types";
 import { jobs, hiringAssessment } from "../engine/career";
@@ -69,7 +71,7 @@ export function PhaseSummary({
   return (
     <section className="phase-summary">
       <div>
-        <Badge>PHASE 1</Badge>
+        <Badge>PHASE 2</Badge>
         <h3>暮らしの24時間</h3>
         <p>
           睡眠 {g.routine.sleepHours}h · 勤務 {work}h · 移動 {commute}h · 食事等
@@ -876,21 +878,27 @@ export function FinancePanel({ g }: { g: GameState }) {
               <b>{yen(g.employments.reduce((a, e) => a + e.accrued, 0))}</b>
             </span>
             <span>
-              設備（取得原価）
-              <b>{yen(g.assets.reduce((a, e) => a + e.cost, 0))}</b>
+              設備・事業純資産・株式
+              <b>
+                {yen(
+                  g.assets.reduce((a, e) => a + e.cost, 0) +
+                    enterpriseWealth(g),
+                )}
+              </b>
             </span>
             <span>
-              債務合計<b>−{yen(g.debt)}</b>
+              生活・ローン債務<b>−{yen(g.debt)}</b>
             </span>
             <span>
               純資産<b>{yen(netWorth(g))}</b>
             </span>
           </div>
           <p className="muted">
-            口座間の振替や借入は収入に数えません。設備の減価償却・売却、税・社会保険は未実装です。
+            口座間の振替や借入は収入に数えません。事業の分別口座・在庫・設備・売掛金・債務と保有株式の簿価を純資産に含めます。個人事業の資金回収は振替です。減価償却・税・社会保険は未実装です。
           </p>
         </section>
       </div>
+      <PersonalBusinessFinance g={g} />
       <section className="card mt">
         <div className="section-head">
           <h2>月次レポート</h2>

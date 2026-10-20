@@ -1,3 +1,4 @@
+import { enterpriseWealth } from "./enterprise/accounting";
 import type { GameState, FinanceKind, LedgerEntry, MonthReport } from "./types";
 export const liquid = (s: GameState) => s.cash + s.bank;
 export const balances = (s: GameState) => ({
@@ -9,7 +10,8 @@ export const netWorth = (s: GameState) =>
   liquid(s) +
   s.employments.reduce((a, e) => a + e.accrued, 0) +
   s.assets.reduce((a, b) => a + b.cost, 0) -
-  s.debt;
+  s.debt +
+  enterpriseWealth(s);
 export function monthReport(s: GameState): MonthReport {
   const month = s.date.slice(0, 7);
   let r = s.reports.find((r) => r.month === month);
@@ -49,6 +51,12 @@ export function post(
   for (const v of [cashDelta, bankDelta, debtDelta, expense])
     if (!Number.isSafeInteger(v))
       throw Error("金額は円単位の整数で指定してください");
+  if (
+    ![s.cash + cashDelta, s.bank + bankDelta, s.debt + debtDelta].every(
+      Number.isSafeInteger,
+    )
+  )
+    throw Error("残高が安全な整数の範囲を超えています");
   if (
     s.cash + cashDelta < 0 ||
     s.bank + bankDelta < 0 ||

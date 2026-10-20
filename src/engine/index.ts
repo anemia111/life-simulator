@@ -1,3 +1,4 @@
+import { runEnterpriseDay } from "./enterprise";
 import type { GameState, Command } from "./types";
 import { createPerson } from "./person";
 import { createWorld } from "./world";
@@ -53,7 +54,9 @@ export function newGame(
     skills: { service: 40 + n, craft: 35 + n, digital: 30 + n },
   }));
   const s: GameState = {
-    schemaVersion: 2,
+    schemaVersion: 3,
+    ventures: [],
+    companies: [],
     person: createPerson(name),
     npcs,
     date: "2026-04-01",
@@ -183,6 +186,7 @@ export function advanceDays(state: GameState, days: number) {
         }
       }
     }
+    runEnterpriseDay(s, id === "enterprise-work" ? performed : 0);
     let remaining = performed;
     const actualBlocks = blocks.flatMap((b) => {
       if (b.kind === "work") {
@@ -241,12 +245,17 @@ export function advanceDays(state: GameState, days: number) {
     const spending = entries
       .filter((e) => e.kind === "living")
       .reduce((a, e) => a - e.amount + Math.max(0, e.debtDelta), 0);
-    const sales = entries
-        .filter((e) => e.kind === "business-revenue")
-        .reduce((a, e) => a + e.amount, 0),
-      businessCosts = entries
-        .filter((e) => e.kind === "business-cost")
-        .reduce((a, e) => a - e.amount + Math.max(0, e.debtDelta), 0);
+    const personalVentures = s.ventures.filter((v) => v.ownerId === "player");
+    const sales =
+        personalVentures.reduce((n, v) => n + v.last.revenue, 0) +
+        entries
+          .filter((e) => e.kind === "business-revenue")
+          .reduce((a, e) => a + e.amount, 0),
+      businessCosts =
+        personalVentures.reduce((n, v) => n + v.last.expenses, 0) +
+        entries
+          .filter((e) => e.kind === "business-cost")
+          .reduce((a, e) => a - e.amount + Math.max(0, e.debtDelta), 0);
     // Planned absence releases its slots. Unexpected absence/partial work retains the reservation as recovery time.
     for (const b of blocks)
       if (b.kind === "activity")
@@ -291,6 +300,9 @@ export function dispatch(state: GameState, command: Command): GameState {
   const s = structuredClone(state);
   syncEmployment(s);
   switch (command.type) {
+    case "enterprise":
+      executeAction(s, "enterprise-manage", { enterprise: command.input });
+      break;
     case "apply":
       executeAction(s, "apply", { id: command.jobId });
       break;

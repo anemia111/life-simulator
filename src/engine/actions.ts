@@ -1,3 +1,4 @@
+import { executeEnterprise } from "./enterprise";
 import type { GameState, ActionTarget, Skill } from "./types";
 import { availableHours } from "./schedule";
 import { liquid, pay, requireCash, transfer, borrow, repay } from "./finance";
@@ -287,6 +288,42 @@ add({
     for (const key of ["weekdayAction", "weekendAction"] as const)
       if (s.routine[key] === "business") s.routine[key] = "rest";
     if (s.action === "business") s.action = "rest";
+  },
+});
+add({
+  id: "enterprise-work",
+  label: "副業・会社の事業を運営",
+  category: "business",
+  hours: 1,
+  daily: true,
+  manual: false,
+  energyPerHour: 2,
+  target: "business",
+  condition: (s) =>
+    s.ventures.some((v) => v.status === "active")
+      ? null
+      : "先に副業・事業を開設してください",
+  result: "余暇時間を事業の配分比率で分割。従業員・外注は別に作業",
+  effect: (s, _t, h) => {
+    s.person.energy = Math.max(0, s.person.energy - h * 2);
+  },
+});
+add({
+  id: "enterprise-manage",
+  label: "事業・会社の経営指示",
+  category: "business",
+  hours: 0.5,
+  duration: (_s, t) =>
+    ["create", "create-company", "incorporate", "close"].includes(
+      t.enterprise?.operation ?? "",
+    )
+      ? 2
+      : 0.5,
+  target: "business",
+  result: "帳簿・契約・設備・所有権を変更",
+  effect: (s, t) => {
+    if (!t.enterprise) throw Error("経営指示がありません");
+    executeEnterprise(s, t.enterprise);
   },
 });
 export const dailyActions = () =>

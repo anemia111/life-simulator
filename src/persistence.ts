@@ -1,3 +1,9 @@
+import { ventureSchema, companySchema } from "./engine/enterprise/schema";
+import {
+  verifyEnterprise,
+  verifyAccounts,
+} from "./engine/enterprise/accounting";
+import { industryModules } from "./engine/enterprise/registry";
 import { z } from "zod";
 import type { GameState } from "./engine/types";
 import { legacySchema } from "./legacy-save";
@@ -68,9 +74,11 @@ const block = z.object({
   targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(2),
+  schemaVersion: z.literal(3),
+  ventures: z.array(ventureSchema),
+  companies: z.array(companySchema),
   person: person.extend({ id: z.literal("player") }),
-  npcs: z.array(person).max(1000),
+  npcs: z.array(person),
   date,
   started: date,
   days: amount,
@@ -253,6 +261,13 @@ export function validateSave(value: unknown): GameState {
     value.schemaVersion === 1
   )
     return validateSave(migrateV1(value));
+  if (
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 2
+  )
+    value = { ...value, schemaVersion: 3, ventures: [], companies: [] };
   const r = schema.safeParse(value);
   if (!r.success) throw Error("セーブ形式が不正、または未対応のバージョンです");
   const s: GameState = r.data;
@@ -306,6 +321,40 @@ export function validateSave(value: unknown): GameState {
       report.cashFlow
     )
       throw Error("月次収支と残高が一致しません");
+  if (
+    s.sequence <
+      Math.max(
+        0,
+        ...[...s.ventures, ...s.companies].flatMap((a) =>
+          a.journal.map((e) => e.id),
+        ),
+      ) ||
+    !unique(s.ventures.map((v) => v.id)) ||
+    !unique(s.companies.map((c) => c.id)) ||
+    s.ventures.some(
+      (v) =>
+        !industryModules.has(v.industry) ||
+        !verifyEnterprise(v) ||
+        (v.ownerId !== "player" &&
+          !s.companies.some((c) => c.id === v.ownerId)) ||
+        v.employees.some((e) => !s.npcs.some((p) => p.id === e.npcId)) ||
+        v.orders.some(
+          (o) =>
+            o.progress > o.hours || !s.npcs.some((p) => p.id === o.clientId),
+        ),
+    ) ||
+    s.companies.some(
+      (c) =>
+        !verifyAccounts(c) ||
+        c.shareholders.reduce((n, h) => n + h.shares, 0) !== c.shares ||
+        !unique(c.shareholders.map((h) => h.personId)) ||
+        c.shareholders.some(
+          (h) =>
+            h.personId !== "player" && !s.npcs.some((p) => p.id === h.personId),
+        ),
+    )
+  )
+    throw Error("事業・法人の帳簿または所有権が不正です");
   assertSchedule(s);
   s.employment = s.employments[0] ?? null;
   return s;
