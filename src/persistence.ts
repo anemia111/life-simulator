@@ -1,107 +1,170 @@
 import { z } from "zod";
 import type { GameState } from "./engine/types";
-import { industries } from "./engine/industries";
+import { legacySchema } from "./legacy-save";
+import { migrateV1 } from "./migration";
+import { actionRegistry } from "./engine/actions";
+import { reconcile } from "./engine/finance";
+import { assertSchedule } from "./engine/schedule";
 import { jobs } from "./engine/career";
-import { housing } from "./engine/life";
 const amount = z.number().finite().int().min(0).max(1e15),
   signed = z.number().finite().int().min(-1e15).max(1e15),
-  text = z.string().max(200);
-const date = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine(
-    (v) =>
-      !Number.isNaN(Date.parse(v)) &&
-      new Date(v + "T00:00:00Z").toISOString().slice(0, 10) === v,
-  );
-const industry = z.string().refine((id) => industries.some((i) => i.id === id));
-const day = z.object({
-  demand: amount,
-  capacity: amount,
-  units: amount,
-  revenue: amount,
-  costs: amount,
-  profit: signed,
+  scalar = z.number().finite().min(0).max(100),
+  text = z.string().max(300),
+  date = legacySchema.shape.date;
+const hours = z.number().finite().min(0).max(24).multipleOf(0.5);
+const balances = z.object({ cash: amount, bank: amount, debt: amount });
+const person = legacySchema.shape.person.omit({ id: true }).extend({
+  id: z.string().min(1).max(100),
+  satisfaction: scalar,
+  sleepDebt: z.number().min(0).max(48),
+  experience: z.object({
+    service: z.number().min(0).max(1e12),
+    craft: z.number().min(0).max(1e12),
+    digital: z.number().min(0).max(1e12),
+  }),
+  occupation: text,
+  employerId: text.nullable(),
+  personality: z.enum(["steady", "outgoing", "curious"]),
+});
+const jobId = z.string().refine((id) => jobs.some((j) => j.id === id));
+const contract = z.object({
+  id: text,
+  jobId,
+  employerId: text,
+  accrued: amount,
+  workedDays: amount,
+  workedHours: z.number().min(0).max(1e12),
+  absences: amount,
+  wage: amount.min(1),
+  rating: scalar,
+  rank: amount.min(1).max(4),
+  started: date,
+  weekdays: z
+    .array(z.number().int().min(0).max(6))
+    .min(1)
+    .max(7)
+    .refine((v) => new Set(v).size === v.length),
+  start: hours,
+  hours: hours.min(0.5),
+  commute: hours.max(3),
+  absentNext: z.boolean(),
+  month: z.string().regex(/^(|\d{4}-\d{2})$/),
+  monthHours: z.number().min(0).max(1000),
+  monthDenominator: z.number().min(0).max(744),
+});
+const block = z.object({
+  kind: z.enum([
+    "sleep",
+    "work",
+    "commute",
+    "essential",
+    "manual",
+    "activity",
+    "free",
+  ]),
+  label: text,
+  start: hours.max(23.5),
+  hours: hours.min(0.5),
+  targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(1),
-  person: z.object({
-    id: z.literal("player"),
-    name: z.string().trim().min(1).max(24),
-    birthDate: date,
-    energy: z.number().min(0).max(100),
-    health: z.number().min(0).max(100),
-    skills: z.object({
-      service: z.number().min(0).max(100),
-      craft: z.number().min(0).max(100),
-      digital: z.number().min(0).max(100),
-    }),
-  }),
-  npcs: z
-    .array(
-      z.object({
-        id: text,
-        name: text,
-        birthDate: date,
-        energy: z.number().min(0).max(100),
-        health: z.number().min(0).max(100),
-        skills: z.object({
-          service: z.number().min(0).max(100),
-          craft: z.number().min(0).max(100),
-          digital: z.number().min(0).max(100),
-        }),
-      }),
-    )
-    .max(1000),
+  schemaVersion: z.literal(2),
+  person: person.extend({ id: z.literal("player") }),
+  npcs: z.array(person).max(1000),
   date,
   started: date,
   days: amount,
   cash: amount,
+  bank: amount,
   debt: amount,
-  employment: z
-    .object({
-      jobId: z.string().refine((id) => jobs.some((j) => j.id === id)),
-      employerId: text,
-      accrued: amount,
-      workedDays: amount,
-    })
-    .nullable(),
-  business: z
-    .object({
-      industryId: industry,
-      price: amount.min(100).max(100000),
-      level: amount.min(1).max(100000),
-      active: z.boolean(),
-      revenue: amount,
-      costs: amount,
-      units: amount,
-      last: day,
-    })
-    .nullable(),
+  loan: amount,
+  employments: z.array(contract).max(4),
+  employment: contract.nullable(),
+  careerHistory: z
+    .array(
+      z.object({
+        jobId,
+        company: text,
+        started: date,
+        ended: date,
+        workedHours: z.number().min(0).max(1e12),
+        workedDays: amount,
+        absences: amount,
+        rank: amount.min(1).max(4),
+        rating: scalar,
+      }),
+    )
+    .max(200),
+  applications: z
+    .array(
+      z.object({
+        date,
+        jobId,
+        hired: z.boolean(),
+        score: z.number().finite(),
+        threshold: z.number().finite(),
+        reason: text,
+      }),
+    )
+    .max(100),
+  vacancies: z
+    .array(
+      z.object({
+        jobId,
+        employerId: text,
+        openings: amount.max(100),
+        competition: z.number().min(0.1).max(100),
+        threshold: z.number().min(0).max(1000),
+      }),
+    )
+    .max(100),
+  relationships: z
+    .array(
+      z.object({
+        npcId: text,
+        affinity: scalar,
+        trust: scalar,
+        met: date,
+        interactions: amount,
+      }),
+    )
+    .max(1000),
+  business: legacySchema.shape.business,
   organizations: z
     .array(
-      z.object({
-        id: text,
-        name: text,
-        kind: z.enum(["employer", "sole-trader", "competitor"]),
-        ownerId: text,
+      legacySchema.shape.organizations.element.extend({
+        cash: signed,
+        dailyRevenue: amount,
+        dailyCost: amount,
       }),
     )
     .max(100),
-  assets: z
+  assets: legacySchema.shape.assets,
+  action: z.string().refine((id) => actionRegistry.get(id)?.daily === true),
+  routine: z.object({
+    sleepHours: z.number().int().min(4).max(10),
+    activityHours: hours.max(8),
+    weekendHours: hours.max(8),
+    weekdayAction: z
+      .string()
+      .refine((id) => actionRegistry.get(id)?.daily === true),
+    weekendAction: z
+      .string()
+      .refine((id) => actionRegistry.get(id)?.daily === true),
+    socialTarget: text.nullable(),
+  }),
+  manualActions: z
     .array(
       z.object({
-        id: text,
-        ownerId: text,
-        kind: z.literal("equipment"),
-        name: text,
-        level: amount.min(1),
-        cost: amount,
+        actionId: z.string().refine((id) => actionRegistry.has(id)),
+        label: text,
+        hours: hours,
       }),
     )
-    .max(100),
-  action: z.enum(["rest", "service", "craft", "digital", "business"]),
-  housingId: z.string().refine((id) => housing.some((h) => h.id === id)),
+    .max(48),
+  housingId: legacySchema.shape.housingId,
+  livingStandard: z.enum(["frugal", "balanced", "comfortable"]),
+  checkpoint: balances,
   ledger: z
     .array(
       z.object({
@@ -109,56 +172,147 @@ const schema = z.object({
         date,
         label: text,
         amount: signed,
-        category: z.enum(["income", "expense", "debt"]),
+        category: z.enum(["income", "expense", "debt", "transfer"]),
+        kind: z.enum([
+          "wages",
+          "business-revenue",
+          "business-cost",
+          "living",
+          "capital",
+          "interest",
+          "transfer",
+          "borrowing",
+          "repayment",
+          "other",
+        ]),
+        cashDelta: signed,
+        bankDelta: signed,
+        debtDelta: signed,
+        cashAfter: amount,
+        bankAfter: amount,
+        debtAfter: amount,
       }),
     )
-    .max(1000),
+    .max(5000),
+  reports: z
+    .array(
+      z.object({
+        month: z.string().regex(/^\d{4}-\d{2}$/),
+        opening: balances,
+        closing: balances,
+        earned: amount,
+        wages: amount,
+        sales: amount,
+        businessCosts: amount,
+        living: amount,
+        capital: amount,
+        interest: amount,
+        otherIncome: amount,
+        otherExpenses: amount,
+        cashFlow: signed,
+      }),
+    )
+    .max(120),
   sequence: amount,
   history: z
     .array(
       z.object({
         date,
         cash: amount,
+        bank: amount,
+        debt: amount,
         netWorth: signed,
         earned: amount,
         spending: amount,
         sales: amount,
         profit: signed,
+        workHours: hours,
+        sleepHours: hours,
+        studyHours: hours,
+        commuteHours: hours,
+        freeHours: hours,
+        activityHours: hours,
+        energy: scalar,
+        satisfaction: scalar,
+        blocks: z.array(block).min(1).max(48),
+        events: z.array(text).max(30),
       }),
     )
     .max(365),
-  world: z.object({
-    city: text,
-    population: amount.min(1).max(1e9),
-    economy: z.number().min(0.1).max(10),
-    competitorPrice: z.number().min(0.1).max(10),
-    competitorQuality: z.number().min(0.1).max(10),
+  world: legacySchema.shape.world.extend({
+    costIndex: z.number().min(0.1).max(10),
   }),
-  totals: z.object({
-    wages: amount,
-    revenue: amount,
-    businessProfit: signed,
-    living: amount,
-  }),
+  totals: legacySchema.shape.totals,
   notices: z.array(text).max(12),
 });
 export function validateSave(value: unknown): GameState {
+  if (
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 1
+  )
+    return validateSave(migrateV1(value));
   const r = schema.safeParse(value);
   if (!r.success) throw Error("セーブ形式が不正、または未対応のバージョンです");
-  const s = r.data;
-  const ids = s.assets.map((a) => a.id);
+  const s: GameState = r.data;
   if (
-    new Set(ids).size !== ids.length ||
     s.date < s.started ||
     s.person.birthDate > s.date ||
-    s.sequence < Math.max(0, ...s.ledger.map((e) => e.id))
+    Math.round((Date.parse(s.date) - Date.parse(s.started)) / 86400000) !==
+      s.days ||
+    s.sequence < Math.max(0, ...s.ledger.map((e) => e.id)) ||
+    !reconcile(s)
   )
-    throw Error("セーブの整合性を確認できません");
+    throw Error("セーブの残高または日付の整合性を確認できません");
+  const unique = (values: string[]) => new Set(values).size === values.length;
+  if (
+    !unique(s.assets.map((a) => a.id)) ||
+    !unique(s.npcs.map((a) => a.id)) ||
+    !unique(s.employments.map((a) => a.id)) ||
+    !unique(s.employments.map((a) => a.jobId)) ||
+    !unique(s.relationships.map((a) => a.npcId)) ||
+    !unique(s.vacancies.map((a) => a.jobId)) ||
+    !unique(s.organizations.map((a) => a.id)) ||
+    !unique(s.reports.map((a) => a.month))
+  )
+    throw Error("セーブ内のIDが重複しています");
+  if (
+    s.employments.some(
+      (e) =>
+        jobs.find((j) => j.id === e.jobId)?.employerId !== e.employerId ||
+        !s.organizations.some((o) => o.id === e.employerId),
+    ) ||
+    s.relationships.some((r) => !s.npcs.some((p) => p.id === r.npcId)) ||
+    (s.routine.socialTarget &&
+      !s.relationships.some((r) => r.npcId === s.routine.socialTarget))
+  )
+    throw Error("人物または勤務契約の参照が不正です");
+  for (const day of s.history) {
+    let end = 0;
+    for (const block of day.blocks) {
+      if (block.start !== end) throw Error("日次時間配分が不正です");
+      end += block.hours;
+    }
+    if (end !== 24 || day.date >= s.date)
+      throw Error("日次時間配分または日付が不正です");
+  }
+  for (const report of s.reports)
+    if (
+      report.closing.cash +
+        report.closing.bank -
+        report.opening.cash -
+        report.opening.bank !==
+      report.cashFlow
+    )
+      throw Error("月次収支と残高が一致しません");
+  assertSchedule(s);
+  s.employment = s.employments[0] ?? null;
   return s;
 }
 export function parseSave(json: string) {
-  if (json.length > 2000000)
-    throw Error("セーブファイルは2MB以内にしてください");
+  if (json.length > 8000000)
+    throw Error("セーブファイルは8MB以内にしてください");
   return validateSave(JSON.parse(json));
 }
 export interface SaveSlot {
@@ -218,5 +372,6 @@ export async function loadGame(id: number) {
 }
 export async function listSaves() {
   await queue.catch(() => {});
-  return transact<SaveSlot[]>("readonly", (s) => s.getAll());
+  const slots = await transact<SaveSlot[]>("readonly", (s) => s.getAll());
+  return slots.map((slot) => ({ ...slot, state: validateSave(slot.state) }));
 }

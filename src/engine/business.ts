@@ -17,12 +17,15 @@ export function openBusiness(s: GameState, id: string) {
   const i = industries.find((i) => i.id === id);
   if (!i) throw Error("業種が見つかりません");
   requireCash(s, i.setup);
-  pay(s, i.setup, i.name + " 開業設備");
+  pay(s, i.setup, i.name + " 開業設備", "capital");
   s.organizations.push({
     id: "player-business",
     name: i.name,
     kind: "sole-trader",
     ownerId: "player",
+    cash: 0,
+    dailyRevenue: 0,
+    dailyCost: 0,
   });
   addEquipment(s, i.product + "設備", i.setup);
   s.business = {
@@ -36,6 +39,8 @@ export function openBusiness(s: GameState, id: string) {
     last: emptyBusinessDay(),
   };
   s.action = "business";
+  s.routine.weekdayAction = "business";
+  s.routine.weekendAction = "business";
   s.notices.unshift(i.name + "を開業しました");
 }
 export const investmentCost = (s: GameState) =>
@@ -44,7 +49,7 @@ export function invest(s: GameState) {
   if (!s.business) throw Error("先に開業してください");
   const cost = investmentCost(s);
   requireCash(s, cost);
-  pay(s, cost, "設備への再投資");
+  pay(s, cost, "設備への再投資", "capital");
   s.business.level++;
   upgradeEquipment(s, cost);
 }
@@ -56,9 +61,9 @@ export function operateBusiness(s: GameState, hours: number) {
   if (!b.active || !hours) return b.last;
   const market = calculateMarket(s, i, hours);
   const costs = market.units * i.unitCost + i.fixedCost;
-  pay(s, costs, "事業：材料費・運営費");
+  pay(s, costs, "事業：材料費・運営費", "business-cost");
   const revenue = market.units * b.price;
-  receive(s, revenue, "事業：" + i.product + " 売上");
+  receive(s, revenue, "事業：" + i.product + " 売上", "business-revenue");
   b.last = { ...market, revenue, costs, profit: revenue - costs };
   b.units += market.units;
   b.revenue += revenue;

@@ -17,7 +17,10 @@ test("人生開始から勤務・給与・学習・開業・設備投資・退�
     .getByRole("navigation")
     .getByRole("button", { name: "仕事を探す" })
     .click();
-  await page.getByRole("button", { name: "応募する", exact: true }).click();
+  await page
+    .getByTestId("job-cafe")
+    .getByRole("button", { name: "応募する", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "カフェスタッフ", exact: true }).first(),
   ).toBeVisible();
@@ -57,11 +60,15 @@ test("人生開始から勤務・給与・学習・開業・設備投資・退�
     .getByRole("navigation")
     .getByRole("button", { name: "仕事を探す" })
     .click();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "仕事・シフト管理", exact: true })
+    .click();
   await page.getByRole("button", { name: "この仕事を辞める" }).click();
   await page
     .getByRole("button", { name: "退職して未払給与を精算する" })
     .click();
-  await expect(page.getByText("現在の仕事", { exact: true })).toHaveCount(0);
+  await expect(page.getByTestId("contract-cafe")).toHaveCount(0);
   await page.getByRole("button", { name: "セーブ・設定", exact: true }).click();
   await page.getByRole("button", { name: "今すぐ保存" }).click();
   await page.reload();
@@ -85,6 +92,12 @@ test("スマホでメニューと時間進行・レイアウト", async ({ page 
     "資産と収支",
     "学びとスキル",
     "暮らし",
+    "仕事・シフト管理",
+    "カレンダー",
+    "人間関係",
+    "行動メニュー",
+    "日次・月次レポート",
+    "ダッシュボード",
   ]) {
     await page.getByRole("button", { name: "メニュー", exact: true }).click();
     await page

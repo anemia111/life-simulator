@@ -1,0 +1,867 @@
+.sidebar {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sidebar .nav-caption {
+  margin-top: 30px;
+}
+.sidebar nav {
+  gap: 3px;
+}
+.sidebar nav button {
+  min-height: 37px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 11px;
+}
+.sidebar-bottom {
+  padding-top: 25px;
+  flex-shrink: 0;
+}
+.sidebar .city-note {
+  padding-bottom: 13px;
+  margin-bottom: 8px;
+}
+.sidebar .save-status {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.phase-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  border: 1px solid #dce4d4;
+  border-radius: 10px;
+  background: #eef2e8;
+  padding: 22px 25px;
+  margin-bottom: 24px;
+}
+.phase-summary > div:first-child {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  align-items: center;
+}
+.phase-summary h3 {
+  font-size: 15px;
+}
+.phase-summary p,
+.phase-summary .text-button {
+  grid-column: 1/-1;
+  justify-self: start;
+}
+.phase-summary p {
+  font-size: 12px;
+}
+.summary-bank {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 6px 10px;
+  min-width: 175px;
+  color: #718961;
+}
+.summary-bank small {
+  font-size: 11px;
+}
+.summary-bank strong {
+  grid-column: 1/-1;
+  font-size: 25px;
+  font-weight: 550;
+  color: #4b6546;
+}
+.summary-bank > span {
+  grid-column: 1/-1;
+  font-size: 10px;
+}
+.phase-toolbar {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin: 0 0 25px;
+}
+.phase-toolbar label {
+  margin: 0;
+}
+.phase-jobs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.job-card {
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+}
+.job-card h2 {
+  font-size: 20px;
+  margin-top: 18px;
+}
+.job-card p {
+  font-size: 12px;
+}
+.job-card .job-company {
+  font-size: 13px;
+  color: #5e7656;
+  margin: 7px 0 12px;
+}
+.job-card .job-rate {
+  font-size: 29px;
+  margin-top: 18px;
+}
+.job-card .job-spec {
+  margin: 18px 0 8px;
+}
+.job-spec > div {
+  display: grid;
+  grid-template-columns: 83px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #edf0e6;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.job-spec dt {
+  color: #8a9782;
+}
+.job-spec dd {
+  margin: 0;
+  color: #52664b;
+}
+.job-promotion {
+  font-size: 10px !important;
+  padding: 12px;
+  background: #f4f6ed;
+  border-radius: 5px;
+  color: #839671;
+}
+.assessment {
+  font-size: 11px !important;
+  margin: 12px 0;
+}
+.job-card .primary {
+  margin-top: auto;
+}
+.phase-contracts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.contract-card h2 {
+  font-size: 20px;
+  margin: 15px 0 7px;
+}
+.contract-card p {
+  font-size: 12px;
+}
+.contract-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 19px 15px;
+  margin: 24px 0;
+  padding: 20px 0;
+  border-top: 1px solid #e8eddf;
+  border-bottom: 1px solid #e8eddf;
+}
+.contract-metrics small {
+  display: block;
+  color: #8e9d7f;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.contract-metrics b {
+  font-size: 19px;
+  font-weight: 550;
+  color: #59724e;
+}
+.shift-editor {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 15px;
+}
+.shift-editor label {
+  margin: 0;
+}
+.shift-editor select {
+  padding: 9px;
+}
+.shift-editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.shift-editor legend {
+  font-size: 11px;
+  color: #8b997d;
+  margin-bottom: 11px;
+}
+.weekday-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.weekday-buttons button {
+  height: 29px;
+  min-width: 29px;
+  flex: 1;
+  border: 1px solid #dde5d3;
+  border-radius: 5px;
+  background: #fbfcf8;
+  color: #98a48a;
+  font-size: 10px;
+}
+.weekday-buttons button.selected,
+.standards-grid .selected,
+.calendar-grid .selected {
+  background: #e7eedc;
+  border-color: #94ab7b;
+  color: #577145;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 19px;
+}
+.block-muted {
+  display: block;
+  font-size: 10px;
+  color: #8f9d80;
+  margin-top: 7px;
+  line-height: 1.8;
+}
+.routine-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+.routine-form > .primary {
+  margin-top: 20px;
+}
+.routine-form > p {
+  margin-top: 18px;
+  font-size: 12px;
+}
+.routine-form label {
+  font-size: 12px;
+}
+.manual-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-top: 23px;
+}
+.manual-action-grid article {
+  border: 1px solid #e1e7d8;
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.manual-action-grid h3 {
+  font-size: 14px;
+}
+.manual-action-grid p {
+  font-size: 11px;
+  margin: 12px 0;
+  flex: 1;
+}
+.manual-action-grid small {
+  display: block;
+  font-size: 10px;
+  color: #93a080;
+  margin-bottom: 18px;
+}
+.manual-action-grid .outline {
+  font-size: 10px;
+  padding: 9px;
+}
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 22px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 23px;
+}
+.calendar-weekday {
+  text-align: center;
+  font-size: 10px;
+  color: #8a9a7a;
+  padding-bottom: 10px;
+}
+.calendar-grid button {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border: 1px solid #e7ebdf;
+  border-radius: 5px;
+  background: #fafbf7;
+  min-height: 90px;
+  padding: 10px 3px;
+  gap: 6px;
+  min-width: 0;
+  color: #7a8b68;
+}
+.calendar-grid b {
+  font-size: 13px;
+  font-weight: 500;
+}
+.calendar-grid button span,
+.calendar-grid small {
+  font-size: 8px;
+  line-height: 1.5;
+}
+.calendar-grid small {
+  color: #b49865;
+}
+.calendar-grid .today b {
+  border-bottom: 2px solid #75965b;
+  color: #53763d;
+}
+.calendar-layout .info-panel {
+  margin-bottom: 0;
+  padding: 14px;
+}
+.calendar-layout .info-panel p {
+  font-size: 10px;
+}
+.time-strip {
+  display: flex;
+  height: 16px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 24px 0 9px;
+  gap: 1px;
+}
+.time-strip span {
+  min-width: 0;
+}
+.time-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #9baa8c;
+}
+.block-sleep {
+  background: #8e9aa6;
+}
+.block-work {
+  background: #73936b;
+}
+.block-commute {
+  background: #c6a478;
+}
+.block-essential {
+  background: #c3c7ad;
+}
+.block-manual {
+  background: #bcad8a;
+}
+.block-activity {
+  background: #94b29b;
+}
+.block-free {
+  background: #e6ebdf;
+}
+.schedule-list {
+  margin: 20px 0;
+  max-height: 530px;
+  overflow-y: auto;
+}
+.schedule-list > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eff2e8;
+  font-size: 11px;
+  color: #758566;
+}
+.schedule-list time {
+  font-size: 10px;
+  color: #9aa78a;
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+}
+.schedule-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.schedule-list b {
+  font-size: 10px;
+  font-weight: 500;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.day-event {
+  margin-top: 8px;
+  font-size: 11px;
+}
+.phase-money-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+  margin-bottom: 23px;
+}
+.phase-money-grid .stat-label {
+  font-size: 11px;
+}
+.phase-money-grid strong {
+  font-size: 27px;
+  font-weight: 550;
+  color: #4d6746;
+  display: block;
+}
+.phase-finance h2 {
+  font-size: 17px;
+}
+.phase-finance p {
+  font-size: 12px !important;
+  line-height: 1.9;
+  margin-top: 14px;
+}
+.phase-finance .business-spec b {
+  font-size: 13px;
+}
+.finance-buttons {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.finance-buttons .outline {
+  font-size: 11px;
+}
+.month-select {
+  width: 145px;
+  margin: 0;
+  padding: 8px;
+  font-size: 12px;
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px 18px;
+  margin: 25px 0;
+}
+.report-grid small {
+  display: block;
+  color: #8c9a7f;
+  font-size: 11px;
+  line-height: 1.7;
+  margin-bottom: 9px;
+}
+.report-grid strong {
+  font-size: 21px;
+  font-weight: 550;
+  color: #5b7550;
+}
+.report-equation {
+  font-size: 12px;
+  padding: 17px;
+  background: #f0f5e8;
+  border-radius: 6px;
+  margin: 20px 0;
+}
+.phase-people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.phase-people .profile-top h2 {
+  font-size: 18px;
+}
+.phase-people .profile-top p {
+  font-size: 11px;
+}
+.phase-people .avatar {
+  height: 52px;
+  width: 52px;
+}
+.phase-people .person-work {
+  font-size: 12px;
+  margin: 18px 0;
+}
+.phase-people p {
+  font-size: 11px;
+}
+.relationship-values {
+  margin: 23px 0;
+}
+.relationship-values > span {
+  display: flex;
+  justify-content: space-between;
+  color: #7d926b;
+  font-size: 12px;
+  margin: 12px 0 8px;
+}
+.relationship-values b {
+  font-weight: 500;
+}
+.phase-vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.phase-vitals > section > span {
+  font-size: 12px;
+  color: #819670;
+}
+.phase-vitals strong {
+  display: block;
+  font-size: 33px;
+  font-weight: 550;
+  color: #5c764f;
+  margin: 15px 0;
+}
+.phase-vitals small {
+  font-size: 11px;
+  color: #9dac8c;
+  margin-left: 8px;
+}
+.standards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin: 23px 0;
+}
+.standards-grid button {
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid #e0e7d4;
+  border-radius: 7px;
+  background: #fbfcf7;
+  padding: 20px;
+  gap: 12px;
+  text-align: left;
+  color: #8a9a77;
+}
+.standards-grid b {
+  font-size: 15px;
+  font-weight: 550;
+}
+.standards-grid span {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.standards-grid small {
+  font-size: 10px;
+}
+.standards-grid ~ .outline {
+  margin-top: 18px;
+}
+.day-events {
+  padding: 16px;
+  background: #f5f8ef;
+  border-radius: 6px;
+  margin-top: 22px;
+}
+.day-events p {
+  font-size: 12px;
+  line-height: 2;
+}
+.phase-people .empty h2 {
+  margin: 20px 0;
+}
+.card.empty > svg {
+  margin: 15px auto;
+  color: #91a87a;
+}
+.calendar-layout h2 {
+  font-size: 15px;
+}
+@media (max-width: 1200px) {
+  .phase-jobs,
+  .phase-contracts {
+    gap: 16px;
+  }
+  .shift-editor {
+    grid-template-columns: 1fr;
+  }
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+  .phase-money-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .manual-action-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .report-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .phase-people {
+    grid-template-columns: 1fr;
+  }
+  .standards-grid {
+    gap: 10px;
+  }
+  .standards-grid button {
+    padding: 16px;
+  }
+  .phase-summary {
+    padding: 20px;
+  }
+  .phase-summary p {
+    font-size: 11px;
+  }
+}
+@media (max-width: 700px) {
+  .phase-toolbar {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .phase-toolbar label:first-child {
+    grid-column: 1/-1;
+  }
+  .phase-jobs,
+  .phase-contracts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .job-card {
+    padding: 22px;
+  }
+  .job-card .job-spec {
+    font-size: 11px;
+  }
+  .job-card .job-spec > div {
+    grid-template-columns: 73px 1fr;
+  }
+  .job-card h2 {
+    font-size: 20px;
+  }
+  .job-card p {
+    font-size: 12px;
+  }
+  .phase-summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 17px;
+    padding: 19px;
+  }
+  .phase-summary h3 {
+    font-size: 14px;
+  }
+  .phase-summary p {
+    font-size: 10px;
+  }
+  .summary-bank {
+    border-top: 1px solid #d9e2cc;
+    padding-top: 15px;
+    grid-template-columns: 20px 1fr auto;
+  }
+  .summary-bank strong {
+    grid-column: auto;
+    font-size: 24px;
+  }
+  .summary-bank > span {
+    font-size: 10px;
+  }
+  .phase-summary .tag {
+    font-size: 8px;
+  }
+  .phase-money-grid {
+    gap: 11px;
+  }
+  .phase-money-grid .card {
+    padding: 17px 12px;
+  }
+  .phase-money-grid strong {
+    font-size: 23px;
+  }
+  .phase-finance {
+    grid-template-columns: 1fr;
+  }
+  .phase-finance .card {
+    padding: 21px;
+  }
+  .phase-finance p {
+    font-size: 11px !important;
+  }
+  .finance-buttons .outline {
+    font-size: 10px;
+  }
+  .routine-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .routine-fields label {
+    font-size: 12px;
+  }
+  .routine-form .primary {
+    width: 100%;
+    font-size: 12px;
+  }
+  .manual-action-grid {
+    grid-template-columns: 1fr;
+  }
+  .manual-action-grid h3 {
+    font-size: 15px;
+  }
+  .manual-action-grid .outline {
+    font-size: 12px;
+  }
+  .manual-action-grid p {
+    font-size: 12px;
+  }
+  .manual-action-grid small {
+    font-size: 11px;
+  }
+  .manual-action-grid article {
+    padding: 20px;
+  }
+  .report-grid {
+    gap: 22px 12px;
+  }
+  .report-grid strong {
+    font-size: 21px;
+  }
+  .report-grid small {
+    font-size: 10px;
+  }
+  .report-equation {
+    font-size: 11px;
+    line-height: 1.9;
+  }
+  .calendar-layout > .card {
+    padding: 17px 13px;
+  }
+  .calendar-grid {
+    gap: 3px;
+  }
+  .calendar-grid button {
+    padding: 10px 1px;
+    min-height: 88px;
+  }
+  .calendar-grid button span,
+  .calendar-grid small {
+    font-size: 7px;
+  }
+  .calendar-grid b {
+    font-size: 12px;
+  }
+  .calendar-layout .info-panel p {
+    font-size: 10px;
+  }
+  .time-axis {
+    font-size: 8px;
+  }
+  .schedule-list > div {
+    font-size: 11px;
+  }
+  .schedule-list time {
+    font-size: 9px;
+    min-width: 76px;
+  }
+  .standards-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .standards-grid button {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 8px;
+    padding: 17px;
+  }
+  .standards-grid small {
+    grid-column: 2;
+  }
+  .phase-vitals {
+    gap: 10px;
+  }
+  .phase-vitals .card {
+    padding: 16px 12px;
+  }
+  .phase-vitals > section > span {
+    font-size: 10px;
+  }
+  .phase-vitals strong {
+    font-size: 27px;
+  }
+  .phase-vitals small {
+    font-size: 8px;
+    margin-left: 3px;
+  }
+  .phase-people h2 {
+    font-size: 17px;
+  }
+  .phase-people p {
+    font-size: 11px;
+  }
+  .phase-people .button-row .primary,
+  .phase-people .button-row .outline {
+    font-size: 11px;
+  }
+  .month-select {
+    width: 124px;
+    font-size: 11px;
+  }
+  .phase-toolbar select,
+  .phase-toolbar input {
+    font-size: 12px;
+  }
+  .contract-metrics b {
+    font-size: 18px;
+  }
+  .contract-card h2 {
+    font-size: 19px;
+  }
+  .contract-card .outline {
+    font-size: 10px;
+  }
+  .sidebar-bottom {
+    padding-top: 25px;
+  }
+  .phase-summary + .dashboard-grid .profile-card {
+    display: block;
+  }
+  .profile-detail {
+    font-size: 11px;
+  }
+  .profile-detail b {
+    font-size: 11px;
+  }
+  .profile-top p {
+    font-size: 10px;
+  }
+  .profile-top h3 {
+    font-size: 15px;
+  }
+  .skill-mini > div:first-child {
+    font-size: 11px;
+  }
+  .profile-card {
+    order: 0;
+  }
+  .page-title h1 {
+    font-size: 22px;
+  }
+}
+.action-choice > span:nth-child(2) {
+  min-width: 0;
+  white-space: normal;
+}
+.action-choice small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.phase-money-grid strong {
+  overflow-wrap: anywhere;
+}
+.action-choice {
+  min-width: 0;
+}

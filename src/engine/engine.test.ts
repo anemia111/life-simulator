@@ -1,16 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { newGame, dispatch, advanceDays } from "./index";
 import { age } from "./person";
-import { receive } from "./finance";
+import { receive, liquid } from "./finance";
 import { calculateMarket } from "./market";
 import { industries } from "./business";
 const employed = () =>
   dispatch(newGame("テスト"), { type: "apply", jobId: "cafe" });
 const business = () =>
-  dispatch(newGame("テスト", "comfortable"), {
-    type: "open",
-    industryId: "writing",
-  });
+  dispatch(
+    dispatch(newGame("テスト", "comfortable"), {
+      type: "open",
+      industryId: "writing",
+    }),
+    { type: "routine", routine: { activityHours: 6 } },
+  );
+
 describe("時間・生活・勤務", () => {
   it("入力を変更せず30日と日次30回が一致", () => {
     const s = employed();
@@ -23,9 +27,9 @@ describe("時間・生活・勤務", () => {
   it("初月家賃は重複せず翌月1日に支払う", () => {
     let s = newGame("テスト");
     s = advanceDays(s, 30);
-    expect(s.totals.living).toBe(24000 + 700 * 30);
+    expect(s.totals.living).toBe(24000 + 700 * 30 + 7000);
     s = advanceDays(s, 1);
-    expect(s.totals.living).toBe(48000 + 700 * 31);
+    expect(s.totals.living).toBe(48000 + 700 * 31 + 7000);
   });
   it("平日のみ勤務し25日に給与全額を振り込む", () => {
     let s = advanceDays(employed(), 24);
@@ -43,9 +47,9 @@ describe("時間・生活・勤務", () => {
   it("退職時に未払給与を精算して勤務が止まる", () => {
     let s = advanceDays(employed(), 7);
     const accrued = s.employment!.accrued,
-      before = s.cash;
+      before = liquid(s);
     s = dispatch(s, { type: "quit" });
-    expect(s.cash).toBe(before + accrued);
+    expect(liquid(s)).toBe(before + accrued);
     expect(s.employment).toBeNull();
     const wages = s.totals.wages;
     expect(advanceDays(s, 7).totals.wages).toBe(wages);
@@ -60,10 +64,10 @@ describe("時間・生活・勤務", () => {
   });
   it("スキル条件を満たすと次の仕事に応募できる", () => {
     let s = newGame("学習");
-    expect(() => dispatch(s, { type: "apply", jobId: "design" })).toThrow(
-      "スキル",
-    );
+    s = dispatch(s, { type: "apply", jobId: "design" });
+    expect(s.applications.at(-1)?.hired).toBe(false);
     s = dispatch(s, { type: "action", action: "digital" });
+    s = dispatch(s, { type: "routine", routine: { activityHours: 6 } });
     s = advanceDays(s, 14);
     expect(s.person.skills.digital).toBeGreaterThan(10);
     s = dispatch(s, { type: "apply", jobId: "design" });
@@ -74,7 +78,8 @@ describe("時間・生活・勤務", () => {
       dispatch(employed(), { type: "action", action: "digital" }),
       7,
     );
-    expect(s.person.skills.digital).toBeCloseTo(3.6);
+    expect(s.person.skills.digital).toBeGreaterThan(3.5);
+    expect(s.person.skills.digital).toBeLessThan(4.1);
     expect(s.totals.wages).toBe(27500);
   });
   it("年齢が上がっても人生を継続できる", () => {

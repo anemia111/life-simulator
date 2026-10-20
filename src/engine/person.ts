@@ -13,7 +13,13 @@ export function createPerson(name: string): Person {
     birthDate: "2008-04-01",
     energy: 100,
     health: 100,
+    sleepDebt: 0,
+    satisfaction: 70,
     skills: { service: 0, craft: 0, digital: 0 },
+    experience: { service: 0, craft: 0, digital: 0 },
+    occupation: "自由な暮らし",
+    employerId: null,
+    personality: "curious",
   };
 }
 export function age(person: Person, date: string) {

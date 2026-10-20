@@ -23,7 +23,7 @@ export function calculateMarket(
   const capacity = Math.floor(
     hours * i.capacity * (1 + (b.level - 1) * 0.5) * quality,
   );
-  const available = Math.max(0, s.cash - i.fixedCost);
+  const available = Math.max(0, s.cash + s.bank - i.fixedCost);
   const affordable = i.unitCost ? Math.floor(available / i.unitCost) : capacity;
   return { demand, capacity, units: Math.min(demand, capacity, affordable) };
 }

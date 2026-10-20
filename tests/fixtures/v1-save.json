@@ -1,0 +1,861 @@
+{
+  "schemaVersion": 1,
+  "person": {
+    "id": "player",
+    "name": "旧版の人生",
+    "birthDate": "2008-04-01",
+    "energy": 80,
+    "health": 100,
+    "skills": {
+      "service": 8.099999999999998,
+      "craft": 0,
+      "digital": 2.2
+    }
+  },
+  "npcs": [
+    {
+      "id": "npc-cafe",
+      "name": "木村 さとし",
+      "birthDate": "1985-06-15",
+      "energy": 100,
+      "health": 100,
+      "skills": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      }
+    },
+    {
+      "id": "npc-shop",
+      "name": "森 ゆい",
+      "birthDate": "1990-08-20",
+      "energy": 100,
+      "health": 100,
+      "skills": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      }
+    },
+    {
+      "id": "npc-design",
+      "name": "石井 あきら",
+      "birthDate": "1988-03-03",
+      "energy": 100,
+      "health": 100,
+      "skills": {
+        "service": 0,
+        "craft": 0,
+        "digital": 0
+      }
+    }
+  ],
+  "date": "2026-05-08",
+  "started": "2026-04-01",
+  "days": 37,
+  "cash": 129400,
+  "debt": 0,
+  "employment": {
+    "jobId": "cafe",
+    "employerId": "cafe-co",
+    "accrued": 49500,
+    "workedDays": 27
+  },
+  "business": {
+    "industryId": "writing",
+    "price": 2500,
+    "level": 1,
+    "active": true,
+    "revenue": 27500,
+    "costs": 3200,
+    "units": 11,
+    "last": {
+      "demand": 5,
+      "capacity": 1,
+      "units": 1,
+      "revenue": 2500,
+      "costs": 400,
+      "profit": 2100
+    }
+  },
+  "organizations": [
+    {
+      "id": "cafe-co",
+      "name": "喫茶 こもれび",
+      "kind": "employer",
+      "ownerId": "npc-cafe"
+    },
+    {
+      "id": "shop-co",
+      "name": "青葉ブックストア",
+      "kind": "employer",
+      "ownerId": "npc-shop"
+    },
+    {
+      "id": "design-co",
+      "name": "スタジオ ノート",
+      "kind": "employer",
+      "ownerId": "npc-design"
+    },
+    {
+      "id": "player-business",
+      "name": "小さな制作室",
+      "kind": "sole-trader",
+      "ownerId": "player"
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-34",
+      "ownerId": "player-business",
+      "kind": "equipment",
+      "name": "記事・文章制作設備",
+      "level": 1,
+      "cost": 20000
+    }
+  ],
+  "action": "business",
+  "housingId": "share",
+  "ledger": [
+    {
+      "id": 1,
+      "date": "2026-04-01",
+      "label": "入居月の家賃",
+      "amount": -24000,
+      "category": "expense"
+    },
+    {
+      "id": 2,
+      "date": "2026-04-01",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 3,
+      "date": "2026-04-02",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 4,
+      "date": "2026-04-03",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 5,
+      "date": "2026-04-04",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 6,
+      "date": "2026-04-05",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 7,
+      "date": "2026-04-06",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 8,
+      "date": "2026-04-07",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 9,
+      "date": "2026-04-08",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 10,
+      "date": "2026-04-09",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 11,
+      "date": "2026-04-10",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 12,
+      "date": "2026-04-11",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 13,
+      "date": "2026-04-12",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 14,
+      "date": "2026-04-13",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 15,
+      "date": "2026-04-14",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 16,
+      "date": "2026-04-15",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 17,
+      "date": "2026-04-16",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 18,
+      "date": "2026-04-17",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 19,
+      "date": "2026-04-18",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 20,
+      "date": "2026-04-19",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 21,
+      "date": "2026-04-20",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 22,
+      "date": "2026-04-21",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 23,
+      "date": "2026-04-22",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 24,
+      "date": "2026-04-23",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 25,
+      "date": "2026-04-24",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 26,
+      "date": "2026-04-25",
+      "label": "給与振込：喫茶 こもれび",
+      "amount": 99000,
+      "category": "income"
+    },
+    {
+      "id": 27,
+      "date": "2026-04-25",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 28,
+      "date": "2026-04-26",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 29,
+      "date": "2026-04-27",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 30,
+      "date": "2026-04-28",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 31,
+      "date": "2026-04-29",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 32,
+      "date": "2026-04-30",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 33,
+      "date": "2026-05-01",
+      "label": "小さな制作室 開業設備",
+      "amount": -20000,
+      "category": "expense"
+    },
+    {
+      "id": 35,
+      "date": "2026-05-01",
+      "label": "事業：材料費・運営費",
+      "amount": -400,
+      "category": "expense"
+    },
+    {
+      "id": 36,
+      "date": "2026-05-01",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 2500,
+      "category": "income"
+    },
+    {
+      "id": 37,
+      "date": "2026-05-01",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 38,
+      "date": "2026-05-01",
+      "label": "シェアハウス 家賃",
+      "amount": -24000,
+      "category": "expense"
+    },
+    {
+      "id": 39,
+      "date": "2026-05-02",
+      "label": "事業：材料費・運営費",
+      "amount": -600,
+      "category": "expense"
+    },
+    {
+      "id": 40,
+      "date": "2026-05-02",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 7500,
+      "category": "income"
+    },
+    {
+      "id": 41,
+      "date": "2026-05-02",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 42,
+      "date": "2026-05-03",
+      "label": "事業：材料費・運営費",
+      "amount": -600,
+      "category": "expense"
+    },
+    {
+      "id": 43,
+      "date": "2026-05-03",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 7500,
+      "category": "income"
+    },
+    {
+      "id": 44,
+      "date": "2026-05-03",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 45,
+      "date": "2026-05-04",
+      "label": "事業：材料費・運営費",
+      "amount": -400,
+      "category": "expense"
+    },
+    {
+      "id": 46,
+      "date": "2026-05-04",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 2500,
+      "category": "income"
+    },
+    {
+      "id": 47,
+      "date": "2026-05-04",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 48,
+      "date": "2026-05-05",
+      "label": "事業：材料費・運営費",
+      "amount": -400,
+      "category": "expense"
+    },
+    {
+      "id": 49,
+      "date": "2026-05-05",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 2500,
+      "category": "income"
+    },
+    {
+      "id": 50,
+      "date": "2026-05-05",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 51,
+      "date": "2026-05-06",
+      "label": "事業：材料費・運営費",
+      "amount": -400,
+      "category": "expense"
+    },
+    {
+      "id": 52,
+      "date": "2026-05-06",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 2500,
+      "category": "income"
+    },
+    {
+      "id": 53,
+      "date": "2026-05-06",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    },
+    {
+      "id": 54,
+      "date": "2026-05-07",
+      "label": "事業：材料費・運営費",
+      "amount": -400,
+      "category": "expense"
+    },
+    {
+      "id": 55,
+      "date": "2026-05-07",
+      "label": "事業：記事・文章制作 売上",
+      "amount": 2500,
+      "category": "income"
+    },
+    {
+      "id": 56,
+      "date": "2026-05-07",
+      "label": "食費・日用品",
+      "amount": -700,
+      "category": "expense"
+    }
+  ],
+  "sequence": 56,
+  "history": [
+    {
+      "date": "2026-04-01",
+      "cash": 75300,
+      "netWorth": 80800,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-02",
+      "cash": 74600,
+      "netWorth": 85600,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-03",
+      "cash": 73900,
+      "netWorth": 90400,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-04",
+      "cash": 73200,
+      "netWorth": 89700,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-05",
+      "cash": 72500,
+      "netWorth": 89000,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-06",
+      "cash": 71800,
+      "netWorth": 93800,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-07",
+      "cash": 71100,
+      "netWorth": 98600,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-08",
+      "cash": 70400,
+      "netWorth": 103400,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-09",
+      "cash": 69700,
+      "netWorth": 108200,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-10",
+      "cash": 69000,
+      "netWorth": 113000,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-11",
+      "cash": 68300,
+      "netWorth": 112300,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-12",
+      "cash": 67600,
+      "netWorth": 111600,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-13",
+      "cash": 66900,
+      "netWorth": 116400,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-14",
+      "cash": 66200,
+      "netWorth": 121200,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-15",
+      "cash": 65500,
+      "netWorth": 126000,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-16",
+      "cash": 64800,
+      "netWorth": 130800,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-17",
+      "cash": 64100,
+      "netWorth": 135600,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-18",
+      "cash": 63400,
+      "netWorth": 134900,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-19",
+      "cash": 62700,
+      "netWorth": 134200,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-20",
+      "cash": 62000,
+      "netWorth": 139000,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-21",
+      "cash": 61300,
+      "netWorth": 143800,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-22",
+      "cash": 60600,
+      "netWorth": 148600,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-23",
+      "cash": 59900,
+      "netWorth": 153400,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-24",
+      "cash": 59200,
+      "netWorth": 158200,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-25",
+      "cash": 157500,
+      "netWorth": 157500,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-26",
+      "cash": 156800,
+      "netWorth": 156800,
+      "earned": 0,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-27",
+      "cash": 156100,
+      "netWorth": 161600,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-28",
+      "cash": 155400,
+      "netWorth": 166400,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-29",
+      "cash": 154700,
+      "netWorth": 171200,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-04-30",
+      "cash": 154000,
+      "netWorth": 176000,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 0,
+      "profit": 0
+    },
+    {
+      "date": "2026-05-01",
+      "cash": 111400,
+      "netWorth": 158900,
+      "earned": 5500,
+      "spending": 24700,
+      "sales": 2500,
+      "profit": 2100
+    },
+    {
+      "date": "2026-05-02",
+      "cash": 117600,
+      "netWorth": 165100,
+      "earned": 0,
+      "spending": 700,
+      "sales": 7500,
+      "profit": 6900
+    },
+    {
+      "date": "2026-05-03",
+      "cash": 123800,
+      "netWorth": 171300,
+      "earned": 0,
+      "spending": 700,
+      "sales": 7500,
+      "profit": 6900
+    },
+    {
+      "date": "2026-05-04",
+      "cash": 125200,
+      "netWorth": 178200,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100
+    },
+    {
+      "date": "2026-05-05",
+      "cash": 126600,
+      "netWorth": 185100,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100
+    },
+    {
+      "date": "2026-05-06",
+      "cash": 128000,
+      "netWorth": 192000,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100
+    },
+    {
+      "date": "2026-05-07",
+      "cash": 129400,
+      "netWorth": 198900,
+      "earned": 5500,
+      "spending": 700,
+      "sales": 2500,
+      "profit": 2100
+    }
+  ],
+  "world": {
+    "city": "青葉市",
+    "population": 120000,
+    "economy": 1,
+    "competitorPrice": 1,
+    "competitorQuality": 1
+  },
+  "totals": {
+    "wages": 148500,
+    "revenue": 27500,
+    "businessProfit": 24300,
+    "living": 73900
+  },
+  "notices": [
+    "小さな制作室を開業しました",
+    "給与 99,000円を受け取りました",
+    "喫茶 こもれびに採用されました",
+    "青葉市で、新しい毎日が始まります"
+  ]
+}

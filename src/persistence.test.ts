@@ -21,7 +21,7 @@ describe("セーブ境界", () => {
   });
   it("未知の版と不正な数値や参照を拒否", () => {
     const s = newGame("検証");
-    expect(() => validateSave({ ...s, schemaVersion: 2 })).toThrow();
+    expect(() => validateSave({ ...s, schemaVersion: 99 })).toThrow();
     expect(() => validateSave({ ...s, cash: NaN })).toThrow();
     expect(() => validateSave({ ...s, housingId: "unknown" })).toThrow();
     expect(() =>
@@ -29,7 +29,7 @@ describe("セーブ境界", () => {
     ).toThrow();
     expect(() => validateSave({ ...s, date: "2026-02-30" })).toThrow();
     expect(() => parseSave("not json")).toThrow();
-    expect(() => parseSave(" ".repeat(2000001))).toThrow();
+    expect(() => parseSave(" ".repeat(8000001))).toThrow();
   });
   it("IndexedDBの3枠が独立し同時保存は順番を保持する", async () => {
     const a = newGame("最初"),

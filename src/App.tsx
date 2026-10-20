@@ -38,33 +38,47 @@ import { age, skillNames } from "./engine/person";
 import { jobs } from "./engine/career";
 import { industries, investmentCost } from "./engine/business";
 import { housing, home } from "./engine/life";
-import { netWorth } from "./engine/finance";
+import { netWorth, liquid } from "./engine/finance";
+import {
+  CareerPanel,
+  ShiftsPanel,
+  CalendarPanel,
+  FinancePanel,
+  SkillsPanel,
+  RelationsPanel,
+  LifePanel,
+  ActionsPanel,
+  ReportsPanel,
+  PhaseSummary,
+} from "./ui/Phase1";
+import { dailyActions, actionUnavailable } from "./engine/actions";
+import { weekday } from "./engine/time";
 import { listSaves } from "./persistence";
 import type { SaveSlot } from "./persistence";
 const yen = (v: number) => "¥" + Math.round(v).toLocaleString("ja-JP");
 const nav = [
   { id: "overview", label: "ダッシュボード", icon: LayoutDashboard },
   { id: "career", label: "仕事を探す", icon: BriefcaseBusiness },
+  { id: "shifts", label: "仕事・シフト管理", icon: Clock },
+  { id: "calendar", label: "カレンダー", icon: CalendarDays },
   { id: "business", label: "事業を営む", icon: Store },
   { id: "finance", label: "資産と収支", icon: Wallet },
   { id: "skills", label: "学びとスキル", icon: BookOpen },
   { id: "life", label: "暮らし", icon: House },
+  { id: "relations", label: "人間関係", icon: Heart },
+  { id: "actions", label: "行動メニュー", icon: Plus },
+  { id: "reports", label: "日次・月次レポート", icon: BookOpen },
 ];
-const actions: { id: Action; label: string; description: string }[] = [
-  { id: "rest", label: "ゆっくり休む", description: "体力 +20 / 健康 +1" },
-  { id: "service", label: "接客を学ぶ", description: "接客スキルを磨く" },
-  {
-    id: "digital",
-    label: "デジタルを学ぶ",
-    description: "制作の基礎を身につける",
-  },
-  { id: "craft", label: "ものづくりを学ぶ", description: "制作スキルを磨く" },
-  {
-    id: "business",
-    label: "事業に取り組む",
-    description: "商品・サービスを生産する",
-  },
-];
+const actions = dailyActions().map((a) => ({
+  id: a.id,
+  label: a.label,
+  description: a.result,
+}));
+const currentAction = (g: GameState) =>
+  [0, 6].includes(weekday(g.date))
+    ? g.routine.weekendAction
+    : g.routine.weekdayAction;
+
 function Card({
   children,
   className = "",
@@ -88,8 +102,11 @@ function Chart({ game }: { game: GameState }) {
   const history = game.history.slice(-30),
     values =
       history.length > 1
-        ? history.map((h) => h.cash)
-        : [history[0]?.cash ?? game.cash, history[0]?.cash ?? game.cash];
+        ? history.map((h) => h.cash + h.bank)
+        : [
+            history[0] ? history[0].cash + history[0].bank : liquid(game),
+            history[0] ? history[0].cash + history[0].bank : liquid(game),
+          ];
   const min = Math.min(...values) * 0.8,
     max = Math.max(...values) * 1.1 + 1;
   const points = values
@@ -99,7 +116,7 @@ function Chart({ game }: { game: GameState }) {
     )
     .join(" ");
   return (
-    <div className="chart" aria-label="直近30日の現金残高推移">
+    <div className="chart" aria-label="直近30日の生活資金推移">
       <div className="chart-labels">
         <span>{yen(max)}</span>
         <span>{yen((max + min) / 2)}</span>
@@ -109,7 +126,7 @@ function Chart({ game }: { game: GameState }) {
         viewBox="0 0 600 155"
         preserveAspectRatio="none"
         role="img"
-        aria-label={`現金残高 ${yen(game.cash)}`}
+        aria-label={`生活資金残高 ${yen(liquid(game))}`}
       >
         <defs>
           <linearGradient id="chartfill" x1="0" y1="0" x2="0" y2="1">
@@ -238,9 +255,9 @@ function Start({ onStart = () => {} }: { onStart?: () => void }) {
               value={condition}
               onChange={(e) => setCondition(e.target.value as typeof condition)}
             >
-              <option value="standard">標準 — 所持金 ¥50,000</option>
-              <option value="challenge">挑戦 — 所持金 ¥20,000</option>
-              <option value="comfortable">余裕 — 所持金 ¥100,000</option>
+              <option value="standard">標準 — 生活資金 ¥50,000</option>
+              <option value="challenge">挑戦 — 生活資金 ¥20,000</option>
+              <option value="comfortable">余裕 — 生活資金 ¥100,000</option>
             </select>
           </label>
           <div className="start-note">
@@ -298,7 +315,7 @@ function Start({ onStart = () => {} }: { onStart?: () => void }) {
               <span>
                 スロット {s.id} · {s.state.person.name}
                 <small>
-                  {s.state.date} / {yen(s.state.cash)}
+                  {s.state.date} / {yen(s.state.cash + s.state.bank)}
                 </small>
               </span>
               <span>
@@ -358,9 +375,9 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
         <Card>
           <span className="stat-label">
             <Wallet size={16} />
-            所持金
+            生活資金
           </span>
-          <strong data-testid="cash">{yen(g.cash)}</strong>
+          <strong data-testid="cash">{yen(liquid(g))}</strong>
           <small>
             {g.debt > 0
               ? `未払債務 ${yen(g.debt)}`
@@ -372,10 +389,12 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
             <BriefcaseBusiness size={16} />
             未払給与
           </span>
-          <strong>{yen(g.employment?.accrued ?? 0)}</strong>
+          <strong>
+            {yen(g.employments.reduce((sum, e) => sum + e.accrued, 0))}
+          </strong>
           <small>
             <span className="dot" />
-            毎月25日に入金
+            契約別の給与日に銀行へ入金
           </small>
         </Card>
         <Card>
@@ -403,6 +422,7 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
           </div>
         </Card>
       </div>
+      <PhaseSummary g={g} go={go} />
       <div className="dashboard-grid">
         <div className="main-column">
           <Card>
@@ -411,19 +431,20 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
                 <span className="eyebrow">YOUR NEXT STEP</span>
                 <h2>今日を、どう過ごす？</h2>
               </div>
-              <span className="quiet-label">余暇の過ごし方</span>
+              <span className="quiet-label">平日・休日の一括設定</span>
             </div>
             <p className="muted description">
-              仕事の予定に合わせて、余暇の行動を毎日続けます。
+              選ぶと平日・休日の方針をまとめて変更します。詳細は行動メニューへ。
             </p>
             <div className="action-grid">
               {actions.map((a) => (
                 <button
                   key={a.id}
                   className={
-                    "action-choice " + (g.action === a.id ? "selected" : "")
+                    "action-choice " +
+                    (currentAction(g) === a.id ? "selected" : "")
                   }
-                  disabled={a.id === "business" && !b}
+                  disabled={!!actionUnavailable(g, a.id)}
                   onClick={() => act({ type: "action", action: a.id })}
                 >
                   <span className="action-icon">
@@ -439,18 +460,20 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
                     {a.label}
                     <small>{a.description}</small>
                   </span>
-                  {g.action === a.id && <Check size={16} />}
+                  {currentAction(g) === a.id && <Check size={16} />}
                 </button>
               ))}
             </div>
             <div className="time-note">
               <Clock size={15} />
               <span>
-                {j
-                  ? "平日 " +
-                    j.hours +
-                    "時間勤務 ＋ 余暇2時間 / 休日は余暇5〜6時間"
-                  : "学習5時間、事業6時間を目安に行動します"}
+                {"勤務契約 " +
+                  g.employments.length +
+                  "件 / 余暇は平日 " +
+                  g.routine.activityHours +
+                  "h・土日 " +
+                  g.routine.weekendHours +
+                  "h（空き時間まで）"}
               </span>
             </div>
           </Card>
@@ -465,8 +488,8 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
               </button>
             </div>
             <div className="chart-heading">
-              <strong>{yen(g.cash)}</strong>
-              <span>現金残高</span>
+              <strong>{yen(liquid(g))}</strong>
+              <span>生活資金残高</span>
             </div>
             <Chart game={g} />
           </Card>
@@ -490,7 +513,10 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
                   <span>未経験から応募できます</span>
                 )}
               </div>
-              <button className="outline full" onClick={() => go("career")}>
+              <button
+                className="outline full"
+                onClick={() => go(j ? "shifts" : "career")}
+              >
                 {j ? "勤務状況を見る" : "求人を探す"}
                 <ArrowRight size={16} />
               </button>
@@ -543,7 +569,14 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
             </div>
             <div className="profile-detail">
               <span>仕事</span>
-              <b>{j?.name ?? "自由な暮らし"}</b>
+              <b>
+                {j
+                  ? j.name +
+                    (g.employments.length > 1
+                      ? " ほか" + (g.employments.length - 1) + "件"
+                      : "")
+                  : "自由な暮らし"}
+              </b>
             </div>
             <div className="profile-detail">
               <span>人生の歩み</span>
@@ -624,103 +657,7 @@ function Overview({ g, go }: { g: GameState; go: (s: string) => void }) {
   );
 }
 function Career({ g }: { g: GameState }) {
-  const { act } = useGame();
-  const [confirm, setConfirm] = useState(false);
-  const current = jobs.find((j) => j.id === g.employment?.jobId);
-  return (
-    <>
-      <PageTitle
-        eyebrow="FIND YOUR PLACE"
-        title="毎日の仕事を、見つける。"
-        description="経験を積みながら、暮らしの土台をつくろう。"
-      />
-      {current && (
-        <Card className="employment">
-          <Tag>現在の仕事</Tag>
-          <h2>{current.name}</h2>
-          <p>
-            {current.company} · 平日 {current.hours}時間 · 時給{" "}
-            {yen(current.wage)}
-          </p>
-          <div className="detail-grid">
-            <div>
-              <small>働いた日数</small>
-              <strong>{g.employment?.workedDays} 日</strong>
-            </div>
-            <div>
-              <small>未払給与 · 25日入金</small>
-              <strong>{yen(g.employment?.accrued ?? 0)}</strong>
-            </div>
-          </div>
-          <p className="muted">
-            時間を進めると平日に自動で勤務します。体力不足の日は勤務時間が減ります。
-          </p>
-          <button
-            className="outline"
-            onClick={() =>
-              confirm
-                ? (act({ type: "quit" }), setConfirm(false))
-                : setConfirm(true)
-            }
-          >
-            {confirm ? "退職して未払給与を精算する" : "この仕事を辞める"}
-          </button>
-          {confirm && (
-            <button className="text-button" onClick={() => setConfirm(false)}>
-              キャンセル
-            </button>
-          )}
-        </Card>
-      )}
-      <h2 className="list-title">
-        青葉市の求人 <span>3件</span>
-      </h2>
-      <div className="listing-grid">
-        {jobs.map((j) => {
-          const eligible = g.person.skills[j.skill] >= j.requirement;
-          return (
-            <Card key={j.id}>
-              <span className="square-icon">
-                <Building2 />
-              </span>
-              <div className="listing-tags">
-                <Tag>アルバイト</Tag>
-                <Tag>
-                  {j.requirement === 0
-                    ? "未経験歓迎"
-                    : `${skillNames[j.skill]} Lv.${j.requirement}〜`}
-                </Tag>
-              </div>
-              <h2>{j.name}</h2>
-              <p className="company">{j.company}</p>
-              <p>{j.description}</p>
-              <div className="job-rate">
-                {yen(j.wage)}
-                <span> / 時間</span>
-              </div>
-              <p className="muted">
-                平日週5日 · 1日{j.hours}時間 · 毎月25日払い
-              </p>
-              <button
-                className="primary full"
-                disabled={!!g.employment || !eligible}
-                onClick={() => act({ type: "apply", jobId: j.id })}
-              >
-                {g.employment?.jobId === j.id
-                  ? "勤務中"
-                  : !eligible
-                    ? "スキル条件が不足しています"
-                    : g.employment
-                      ? "現在の仕事を退職後に応募"
-                      : "応募する"}
-                <ArrowRight size={16} />
-              </button>
-            </Card>
-          );
-        })}
-      </div>
-    </>
-  );
+  return <CareerPanel g={g} />;
 }
 function Business({ g }: { g: GameState }) {
   const { act } = useGame(),
@@ -771,10 +708,10 @@ function Business({ g }: { g: GameState }) {
               </div>
               <button
                 className="primary full"
-                disabled={g.cash < i.setup}
+                disabled={liquid(g) < i.setup}
                 onClick={() => act({ type: "open", industryId: i.id })}
               >
-                {g.cash < i.setup
+                {liquid(g) < i.setup
                   ? "開業資金が不足しています"
                   : "この事業をはじめる"}
                 <Plus size={17} />
@@ -809,7 +746,7 @@ function Business({ g }: { g: GameState }) {
       </div>
       {g.action !== "business" && (
         <div className="warning">
-          現在の余暇は「{actions.find((a) => a.id === g.action)?.label}
+          現在の余暇は「{actions.find((a) => a.id === currentAction(g))?.label}
           」です。販売には事業の行動が必要です。
           <button onClick={() => act({ type: "action", action: "business" })}>
             事業に取り組む
@@ -857,7 +794,7 @@ function Business({ g }: { g: GameState }) {
             </span>
           </div>
           <p className="muted">
-            販売数は注文・生産能力・材料費を払える資金で決まります。勤務日は余暇2時間、休日は6時間。未稼働日は0件です。
+            販売数は注文・生産能力・材料費を払える資金で決まります。生活スケジュールで設定した余暇時間を使います。未稼働日は0件です。
           </p>
         </Card>
         <Card>
@@ -892,7 +829,7 @@ function Business({ g }: { g: GameState }) {
           </p>
           <button
             className="primary full"
-            disabled={g.cash < investmentCost(g)}
+            disabled={liquid(g) < investmentCost(g)}
             onClick={() => act({ type: "invest" })}
           >
             設備を拡張する · {yen(investmentCost(g))}
@@ -942,231 +879,13 @@ function PageTitle({
   );
 }
 function Finance({ g }: { g: GameState }) {
-  return (
-    <>
-      <PageTitle
-        eyebrow="KNOW YOUR NUMBERS"
-        title="暮らしと、お金のこと。"
-        description="積み重ねた仕事も、日々の支出も。ここで見渡せます。"
-      />
-      <div className="stats three">
-        <Card>
-          <span className="stat-label">現金残高</span>
-          <strong>{yen(g.cash)}</strong>
-          <small>未払給与 {yen(g.employment?.accrued ?? 0)}</small>
-        </Card>
-        <Card>
-          <span className="stat-label">純資産</span>
-          <strong>{yen(netWorth(g))}</strong>
-          <small>現金 ＋ 未払給与 ＋ 設備取得額 − 債務</small>
-        </Card>
-        <Card>
-          <span className="stat-label">未払債務</span>
-          <strong>{yen(g.debt)}</strong>
-          <small>次回の収入で自動返済・無利息</small>
-        </Card>
-      </div>
-      <div className="two-cards">
-        <Card>
-          <h2>暮らしの収支 · 累計</h2>
-          <div className="business-spec">
-            <span>
-              給与の発生額 <b>{yen(g.totals.wages)}</b>
-            </span>
-            <span>
-              事業売上 <b>{yen(g.totals.revenue)}</b>
-            </span>
-            <span>
-              事業営業利益 <b>{yen(g.totals.businessProfit)}</b>
-            </span>
-            <span>
-              生活費・家賃 <b>{yen(g.totals.living)}</b>
-            </span>
-          </div>
-          <p className="muted">
-            営業利益は税引前。設備投資・給与の未入金により、現金の増減とは異なります。
-          </p>
-        </Card>
-        <Card>
-          <h2>保有する設備</h2>
-          {g.assets.length ? (
-            g.assets.map((a) => (
-              <div className="asset" key={a.id}>
-                <Store />
-                <span>
-                  {a.name}
-                  <small>自分の事業が所有 · Lv.{a.level}</small>
-                </span>
-                <b>{yen(a.cost)}</b>
-              </div>
-            ))
-          ) : (
-            <p className="empty">
-              まだ設備を持っていません。
-              <br />
-              自分のペースで資産を育てていきましょう。
-            </p>
-          )}
-          <p className="muted">
-            取得原価で評価。減価償却・設備売却は未実装です。
-          </p>
-        </Card>
-      </div>
-      <Card className="ledger-card">
-        <div className="section-head">
-          <h2>入出金の記録</h2>
-          <Tag>直近50件</Tag>
-        </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>日付</th>
-                <th>内容</th>
-                <th>区分</th>
-                <th>金額</th>
-              </tr>
-            </thead>
-            <tbody>
-              {g.ledger
-                .slice(-50)
-                .reverse()
-                .map((e) => (
-                  <tr key={e.id}>
-                    <td>{e.date}</td>
-                    <td>{e.label}</td>
-                    <td>
-                      {e.category === "debt"
-                        ? "債務発生"
-                        : e.amount >= 0
-                          ? "入金"
-                          : "支出"}
-                    </td>
-                    <td className={e.category === "income" ? "positive" : ""}>
-                      {e.amount > 0 ? "+" : ""}
-                      {yen(e.amount)}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </>
-  );
+  return <FinancePanel g={g} />;
 }
 function Skills({ g }: { g: GameState }) {
-  const { act } = useGame();
-  return (
-    <>
-      <PageTitle
-        eyebrow="GROW AT YOUR OWN PACE"
-        title="学んだ分だけ、世界が広がる。"
-        description="学習は無料。時間を進めると、選んだスキルが少しずつ育ちます。"
-      />
-      <div className="listing-grid">
-        {Object.entries(skillNames).map(([id, label]) => (
-          <Card key={id}>
-            <span className="square-icon">
-              <BookOpen />
-            </span>
-            <h2>{label}</h2>
-            <div className="skill-value">
-              Lv. {Math.floor(g.person.skills[id as keyof typeof skillNames])}
-              <small> / 100</small>
-            </div>
-            <Meter value={g.person.skills[id as keyof typeof skillNames]} />
-            <p>
-              {id === "service"
-                ? "人と関わる仕事の応募条件に。勤務でも経験を積めます。"
-                : id === "digital"
-                  ? "制作アシスタントへの応募や、文章制作の品質・生産能力に。"
-                  : "焼き菓子づくりの品質と生産能力に。"}
-            </p>
-            <p className="muted">
-              勤務日 +0.36 / 休日 +0.90
-              <br />
-              学習による体力消費：毎時2
-            </p>
-            <button
-              className="primary full"
-              onClick={() => act({ type: "action", action: id as Action })}
-            >
-              {g.action === id ? "現在の学習方針" : "このスキルを学ぶ"}
-              {g.action === id ? <Check size={17} /> : <ArrowRight size={17} />}
-            </button>
-          </Card>
-        ))}
-      </div>
-    </>
-  );
+  return <SkillsPanel g={g} />;
 }
 function Life({ g }: { g: GameState }) {
-  const { act } = useGame();
-  return (
-    <>
-      <PageTitle
-        eyebrow="A PLACE TO CALL HOME"
-        title="暮らしを、整える。"
-        description="住む場所と休む時間。毎日の土台を大切に。"
-      />
-      <div className="info-panel">
-        <House />
-        <p>
-          家賃は毎月1日、食費・日用品は毎日支払います。住み替え時は家賃の増額分だけ精算します。減額分の返金はありません。
-        </p>
-      </div>
-      <div className="listing-grid">
-        {housing.map((h) => (
-          <Card key={h.id}>
-            <span className="square-icon">
-              <House />
-            </span>
-            <h2>{h.name}</h2>
-            <p>{h.description}</p>
-            <div className="job-rate">
-              {yen(h.rent)}
-              <span> / 月</span>
-            </div>
-            <div className="business-spec">
-              <span>
-                食費・日用品 <b>{yen(h.daily)} / 日</b>
-              </span>
-              <span>
-                日次の体力回復 <b>+{h.recovery}</b>
-              </span>
-              <span>
-                住み替え差額 <b>{yen(Math.max(0, h.rent - home(g).rent))}</b>
-              </span>
-            </div>
-            <button
-              className="primary full"
-              disabled={
-                h.id === g.housingId ||
-                g.cash < Math.max(0, h.rent - home(g).rent)
-              }
-              onClick={() => act({ type: "housing", housingId: h.id })}
-            >
-              {h.id === g.housingId ? "現在の住まい" : "ここへ住み替える"}
-              <House size={16} />
-            </button>
-          </Card>
-        ))}
-      </div>
-      <Card className="mt">
-        <h2>ひと息つく時間も、人生の一部。</h2>
-        <p>
-          休養を選ぶと、住居の回復に加えて体力が20、健康が1回復します。勤務の予定は続きます。
-        </p>
-        <button
-          className="outline"
-          onClick={() => act({ type: "action", action: "rest" })}
-        >
-          <Coffee size={16} /> 余暇はゆっくり休む
-        </button>
-      </Card>
-    </>
-  );
+  return <LifePanel g={g} />;
 }
 function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
   const { slot, save, load, importGame } = useGame();
@@ -1214,7 +933,7 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
                 </b>
                 <small>
                   {s
-                    ? `${s.state.date} · ${yen(s.state.cash)}`
+                    ? `${s.state.date} · ${yen(s.state.cash + s.state.bank)}`
                     : "新しい人生の開始画面で選べます"}
                 </small>
               </div>
@@ -1281,8 +1000,8 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 2000000) {
-                setMessage("ファイルは2MB以内にしてください");
+              if (file.size > 8000000) {
+                setMessage("ファイルは8MB以内にしてください");
                 return;
               }
               setMessage(
@@ -1302,11 +1021,11 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.1 ·
-          仕事、生活、学習、個人事業、設備所有、ローカル保存を実装しています。
+          v0.2 ·
+          24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、設備所有、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
-          法人設立、株式売買、融資、税・社会保険、交友関係、複数都市は未実装です。年齢や事業の赤字による強制終了はありません。
+          法人設立、株式売買、税・社会保険、共同創業、複数都市は未実装です。年齢や事業の赤字による強制終了はありません。
         </p>
       </Card>
     </>
@@ -1393,7 +1112,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.1</span>
+            <span>v0.2</span>
           </div>
         </div>
       </aside>
@@ -1438,6 +1157,25 @@ export default function App() {
             <Overview g={g} go={go} />
           ) : page === "career" ? (
             <Career g={g} />
+          ) : page === "shifts" ? (
+            <ShiftsPanel g={g} />
+          ) : page === "calendar" ? (
+            <CalendarPanel g={g} />
+          ) : page === "relations" ? (
+            <RelationsPanel g={g} />
+          ) : page === "actions" ? (
+            <ActionsPanel
+              key={
+                g.date +
+                g.routine.sleepHours +
+                g.routine.weekdayAction +
+                g.routine.weekendAction +
+                g.routine.socialTarget
+              }
+              g={g}
+            />
+          ) : page === "reports" ? (
+            <ReportsPanel g={g} />
           ) : page === "business" ? (
             <Business key={g.business?.industryId ?? "none"} g={g} />
           ) : page === "finance" ? (
@@ -1451,7 +1189,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · EARLY ACCESS</span>
+            <span>LIFE SIMULATOR · PHASE 1</span>
           </footer>
         </main>
         <div className="time-dock">
@@ -1462,7 +1200,7 @@ export default function App() {
             <span>
               <b>明日へ、一歩。</b>
               <small>
-                余暇：{actions.find((a) => a.id === g.action)?.label}
+                余暇：{actions.find((a) => a.id === currentAction(g))?.label}
               </small>
             </span>
           </div>
