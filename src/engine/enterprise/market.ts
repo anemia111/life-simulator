@@ -1,3 +1,4 @@
+import { sharedDemand } from "../simulation/market";
 import { locationEffect } from "../spatial/selectors";
 import type { GameState } from "../types";
 import type { Enterprise, IndustryModule } from "./types";
@@ -20,28 +21,5 @@ export function attraction(v: Enterprise, m: IndustryModule, s: GameState) {
   );
 }
 export function demandFor(s: GameState, v: Enterprise, m: IndustryModule) {
-  const competitors = s.ventures.filter(
-    (x) =>
-      x.status === "active" &&
-      x.industry === v.industry &&
-      x.region === v.region,
-  );
-  const own = attraction(v, m, s),
-    total = competitors.reduce(
-      (n, x) => n + attraction(x.id === v.id ? v : x, m, s),
-      0,
-    );
-  const external = 8 / s.world.competitorPrice;
-  return Math.max(
-    0,
-    Math.floor(
-      (m.market *
-        (s.world.population / 120000) *
-        s.world.economy *
-        regions[v.region].market *
-        locationEffect(s, v, m.siteProfile).market *
-        own) /
-        (external + total),
-    ),
-  );
+  return sharedDemand(s, v, m);
 }

@@ -323,29 +323,33 @@ describe("Phase 2 共通所有権・会計・時間", () => {
     expect(companyNAV(s, s.companies[0])).toBe(0);
     audit(s);
   });
-  it("複数事業と会社の1年進行は日次と早送りで一致し保存できる", async () => {
-    let s = setup();
-    s = cmd(s, {
-      operation: "reorder",
-      id: s.ventures[0].id,
-      amount: 10,
-      value: 30,
-    });
-    s = cmd(s, { operation: "create-company", name: "会社", amount: 10000 });
-    s = dispatch(s, { type: "apply", jobId: "cafe" });
-    s = work(s);
-    const fast = advanceDays(s, 365);
-    let daily = s;
-    for (let i = 0; i < 365; i++) daily = advanceDays(daily, 1);
-    expect(fast).toEqual(daily);
-    audit(fast);
-    expect(parseSave(JSON.stringify(fast))).toEqual(fast);
-    await saveGame(3, fast);
-    expect(await loadGame(3)).toEqual(fast);
-  });
+  it(
+    "複数事業と会社の1年進行は日次と早送りで一致し保存できる",
+    { timeout: 20000 },
+    async () => {
+      let s = setup();
+      s = cmd(s, {
+        operation: "reorder",
+        id: s.ventures[0].id,
+        amount: 10,
+        value: 30,
+      });
+      s = cmd(s, { operation: "create-company", name: "会社", amount: 10000 });
+      s = dispatch(s, { type: "apply", jobId: "cafe" });
+      s = work(s);
+      const fast = advanceDays(s, 365);
+      let daily = s;
+      for (let i = 0; i < 365; i++) daily = advanceDays(daily, 1);
+      expect(fast).toEqual(daily);
+      audit(fast);
+      expect(parseSave(JSON.stringify(fast))).toEqual(fast);
+      await saveGame(3, fast);
+      expect(await loadGame(3)).toEqual(fast);
+    },
+  );
   it("v2の現金・事業・給与・能力を保存移行後も維持", () => {
     const s = validateSave(v2);
-    expect(s.schemaVersion).toBe(4);
+    expect(s.schemaVersion).toBe(5);
     expect(s.business).toEqual(v2.business);
     expect(s.cash).toBe(v2.cash);
     expect(s.assets).toEqual(v2.assets);

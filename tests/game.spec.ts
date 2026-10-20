@@ -185,12 +185,19 @@ test("事業の休業・再開・廃業と低資金からの継続", async ({ pa
     .getByRole("navigation")
     .getByRole("button", { name: "仕事を探す" })
     .click();
-  await page
-    .getByRole("button", { name: "応募する", exact: true })
-    .first()
-    .click();
+  // NPCが募集枠を競うため、その日に応募可能な初心者求人を選ぶ。
+  const card = page
+    .locator(".job-card")
+    .filter({
+      has: page.getByText("現在の能力・経験は採用基準を満たします", {
+        exact: true,
+      }),
+    })
+    .first();
+  const title = await card.getByRole("heading").innerText();
+  await card.getByRole("button", { name: "応募する", exact: true }).click();
   await page.getByRole("button", { name: "30日進める", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "カフェスタッフ", exact: true }).first(),
+    page.getByRole("heading", { name: title, exact: true }).first(),
   ).toBeVisible();
 });

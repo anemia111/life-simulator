@@ -29,7 +29,12 @@ export function book(
   label: string,
   change: Partial<Book>,
 ) {
-  const delta = { ...emptyBook(), ...change },
+  const delta = Object.fromEntries(
+      Object.entries({ ...emptyBook(), ...change }).map(([k, v]) => [
+        k,
+        Object.is(v, -0) ? 0 : v,
+      ]),
+    ) as unknown as Book,
     after = { ...a.book };
   for (const k of Object.keys(delta) as (keyof Book)[]) {
     after[k] += delta[k];

@@ -28,7 +28,7 @@ const delta = z.object({
   revenue: signed,
   expenses: signed,
 });
-const account = {
+export const account = {
   months: z
     .array(
       z.object({

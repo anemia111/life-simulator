@@ -1,3 +1,5 @@
+import { initialSimulation } from "./simulation/initial";
+import { beginWorldDay, endWorldDay } from "./simulation";
 import {
   initialSpatial,
   districts,
@@ -36,7 +38,10 @@ import { emptyBusinessDay } from "./business";
 export function newGame(
   name: string,
   condition: "standard" | "challenge" | "comfortable" = "standard",
+  seed = 4172026,
 ): GameState {
+  if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295)
+    throw Error("シードは32bitの非負整数です");
   const cash = { standard: 50000, challenge: 20000, comfortable: 100000 }[
     condition
   ];
@@ -61,7 +66,8 @@ export function newGame(
     skills: { service: 40 + n, craft: 35 + n, digital: 30 + n },
   }));
   const s: GameState = {
-    schemaVersion: 4,
+    schemaVersion: 5,
+    simulation: null!,
     spatial: initialSpatial(),
     ventures: [],
     companies: [],
@@ -118,33 +124,9 @@ export function newGame(
     totals: { wages: 0, revenue: 0, businessProfit: 0, living: 24000 },
     notices: ["青葉市で、新しい毎日が始まります"],
   };
+  s.simulation = initialSimulation(s, seed);
   pay(s, 24000, "入居月の家賃");
   return s;
-}
-function companyDay(s: GameState) {
-  for (const o of s.organizations.filter((o) => o.kind === "employer"))
-    o.cash += Math.round(o.dailyRevenue * s.world.economy) - o.dailyCost;
-  for (const v of s.vacancies) {
-    const j = jobs.find((j) => j.id === v.jobId)!,
-      o = s.organizations.find((o) => o.id === v.employerId)!;
-    v.openings =
-      o.cash < 0
-        ? 0
-        : Math.max(
-            0,
-            Math.round(
-              2 *
-                (districts.find(
-                  (d) =>
-                    d.id === (jobDistricts[j.id] ?? j.id.replace("local-", "")),
-                )?.demand.retail ?? 1) *
-                (1 - cities[0].unemployment) *
-                s.world.economy,
-            ) - s.employments.filter((e) => e.jobId === j.id).length,
-          );
-    v.competition = Math.round((j.competition / s.world.economy) * 100) / 100;
-    v.threshold = j.threshold + (o.cash < 100000 ? 3 : 0);
-  }
 }
 export function advanceDays(state: GameState, days: number) {
   validateDays(days);
@@ -155,7 +137,7 @@ export function advanceDays(state: GameState, days: number) {
     const blocks = buildDayPlan(s);
     sleepAndRecover(s);
     decideCompetitors(s);
-    companyDay(s);
+    beginWorldDay(s);
     chargeInterest(s);
     let earned = 0,
       workHours = 0,
@@ -302,6 +284,7 @@ export function advanceDays(state: GameState, days: number) {
       energyLimit(s),
       s.person.energy + freeHours * 0.7,
     );
+    endWorldDay(s);
     livingExpenses(s);
     const entries = s.ledger.filter((e) => e.date === s.date);
     const spending = entries

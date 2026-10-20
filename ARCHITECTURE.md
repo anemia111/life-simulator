@@ -1,8 +1,8 @@
-# Phase 3 アーキテクチャ
+# Phase 4 アーキテクチャ
 
 ## 境界
 
-`src/engine` はReact・Zustand・IndexedDBに依存しない純粋なTypeScript。`dispatch` は状態を複製し、コマンドを適用して新しい状態を返す。`advanceDays` は同じ日次処理をN回実行する。乱数・システム時刻はゲーム計算に使わない。UIはコマンドを送り、保存アダプターが非同期で書き込む。
+`src/engine` はReact・Zustand・IndexedDBに依存しない純粋なTypeScript。`dispatch` は状態を複製し、コマンドを適用して新しい状態を返す。`advanceDays` は同じ日次処理をN回実行する。システム時刻はゲーム計算に使わない。NPCの選択には保存可能なシード付き乱数を使い、売上は有限需要と供給から決める。UIはコマンドを送り、保存アダプターが非同期で書き込む。
 
 ## 実装モジュール
 
@@ -19,7 +19,7 @@
 | Market      | market.ts                                      | 需要・品質・供給・資金制約                      |
 | AI          | ai.ts / relationships.ts                       | 競合価格決定、職場での出会いと交流              |
 | Actions     | actions.ts                                     | 汎用行動定義・条件・費用・時間・効果の実行境界  |
-| Persistence | persistence.ts / migration.ts / legacy-save.ts | v4検証、v1/v2/v3移行、IndexedDBと3枠                  |
+| Persistence | persistence.ts / migration.ts / legacy-save.ts | v4検証、v1/v2/v3移行、IndexedDBと3枠            |
 
 `src/ui/Phase1.tsx` に求人、シフト、生活、財務、関係、カレンダー、レポートを分離。既存の開始画面・ダッシュボード・事業・保存画面は `App.tsx` から接続。Zustandの `store.ts` は状態遷移と保存要求のみを担当する。
 
@@ -27,7 +27,7 @@
 
 Person、Organization、Asset、EmploymentContract、Offering、Relationship、Vacancy、LedgerEntryをIDで関連付ける。勤務は `employments[]` が正規データ。`employment` は旧UI互換の読み取り別名で、コマンドと読込時に先頭契約へ同期する。新事業は `ventures[]`、会社は `companies[]`。`ownerId` は本人または会社IDを指す。会社の保有事業・従業員・資産は参照で集計し重複保存しない。
 
-企業は自分の求人・募集枠・採用点・倍率を持つ。日次の基礎売上・費用とプレイヤーの給与発生を経営資金に反映し、資金不足なら募集停止する。NPC企業の全商品市場や従業員給与の完全シミュレーションではない。職場人物との信頼は採用と評価に作用する。
+企業は自分の求人・募集枠・採用点・倍率を持つ。Phase 4ではsimulation.firmsの共通帳簿を正とし、Organization.cashは旧UI向けの現金−負債の別名へ同期する。固定の日次基礎売上は廃止し、市場配分と労働・原価資金から実売を算出。NPCの給与は企業と本人へ双方記帳する。職場人物との信頼は採用と評価に作用する。
 
 ## 行動の追加
 
@@ -47,7 +47,7 @@ Person、Organization、Asset、EmploymentContract、Offering、Relationship、V
 
 ## 保存と互換性
 
-保存版 `schemaVersion=4`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限8MB。
+保存版 `schemaVersion=5`、IndexedDB自体のDB版は1を維持し、既存ストアを保持。Zodで全構造、ID、日付、シフト、24h、元帳・月次残高の整合性を検証する。未知の版や改ざん残高を拒否する。保存要求は直列キューで順序を維持。JSON上限16MB。
 
 v1は旧スキーマで検証後、現金・債務・給与債権・事業・設備・能力・日付を維持して変換。旧元帳から金融チェックポイントを復元し、以後の残高照合を可能にする。記録のなかった勤務時間は勤務日数×所定時間で推定し、旧日次の時間配分・債務残高は未記録であると明記する。移行以前の月次情報は残された元帳・日次履歴の範囲に限る。
 
@@ -82,3 +82,11 @@ v2は既存状態を保ったまま新配列を空で追加する。v1の従来�
 `ui/CityMap.tsx` はSVGの地図と詳細、`LocationSummary.tsx` はダッシュボードの生活圏サマリー。計算はengineに置き、UIはコマンド送信と表示のみ。都市マップは遅延読込、React/Zodも別チャンク化して初期ロードを軽くする。スマホは詳細パネルをスクロールし、閉じる操作を固定表示。
 
 v3保存は家計・事業・株主・帳簿を保持し、現住居を若葉学生街の対応タイプへ割当てる。旧事業は物件を借りるまで在宅で従来計算を維持。v1/v2も従来の変換を通じv4へ。追加6企業・求人・NPCのみ補完し、既存の残高・勤務契約・能力・業績を作り直さない。
+
+## Phase 4 の追加モジュール
+
+`engine/simulation` の型・初期化・業界モデル・市場・労働・日週月次オーケストレーション・保存スキーマを分離。UIは遅延読込する `WorldPanel`。既存地図のtenant selectorはAIの拠点と閉鎖状態も参照し、二重入居を防ぐ。日次開始に市場配分を固定し、NPCの実働・給与を更新。プレイヤーの従来勤務・余暇・事業の後にAIの供給・費用を精算する。
+
+AI/NPCはenterprise.Accountsを再利用し、元帳60件のopening圧縮と120か月の履歴を維持。新業界はIndustryModuleに加えWorldIndustryModelを登録。純粋な計算の契約と業界モデルの差はWORLD_SYSTEM.mdを参照。保存v4 fixtureを維持し、世界の初期化は旧データを破壊せず追加する。
+
+旧Phase 2/3の節は当時の設計経緯を含む。現在の市場配分・AIの正規データは本節とWORLD_SYSTEM.mdに従う。

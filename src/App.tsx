@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { LocationSummary } from "./ui/LocationSummary";
+const WorldPanel = lazy(() => import("./ui/WorldPanel"));
 const CityMap = lazy(() => import("./ui/CityMap"));
 import { personalEnterpriseProfit } from "./engine/enterprise/accounting";
 import { EnterprisePanel, CompanyPanel } from "./ui/Phase2";
@@ -64,6 +65,7 @@ import type { SaveSlot } from "./persistence";
 const yen = (v: number) => "¥" + Math.round(v).toLocaleString("ja-JP");
 const nav = [
   { id: "overview", label: "ダッシュボード", icon: LayoutDashboard },
+  { id: "world", label: "世界・都市経済", icon: TrendingUp },
   { id: "map", label: "都市マップ", icon: MapPin },
   { id: "career", label: "仕事を探す", icon: BriefcaseBusiness },
   { id: "shifts", label: "仕事・シフト管理", icon: Clock },
@@ -1031,7 +1033,7 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.4 ·
+          v0.5 ·
           24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、設備所有、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
@@ -1122,7 +1124,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.4</span>
+            <span>v0.5</span>
           </div>
         </div>
       </aside>
@@ -1172,6 +1174,10 @@ export default function App() {
             <Suspense fallback={<p>都市マップを読み込んでいます…</p>}>
               <CityMap g={g} go={go} />
             </Suspense>
+          ) : page === "world" ? (
+            <Suspense fallback={<p>世界の情報を読み込んでいます…</p>}>
+              <WorldPanel g={g} go={go} />
+            </Suspense>
           ) : page === "career" ? (
             <Career g={g} />
           ) : page === "shifts" ? (
@@ -1217,7 +1223,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · PHASE 3</span>
+            <span>LIFE SIMULATOR · PHASE 4</span>
           </footer>
         </main>
         <div className="time-dock">

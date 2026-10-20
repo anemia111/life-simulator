@@ -1,3 +1,5 @@
+import { book as aiBook } from "./enterprise/accounting";
+import { changeJob as npcJob } from "./simulation";
 import { describe, it, expect } from "vitest";
 import { newGame, dispatch, advanceDays } from "./index";
 import { buildDayPlan, availableHours } from "./schedule";
@@ -169,7 +171,12 @@ describe("採用・経験・成長・交流", () => {
   });
   it("企業の資金不足では募集を停止し採用しない", () => {
     const s = newGame("企業");
-    s.organizations.find((o) => o.id === "cafe-co")!.cash = -100000;
+    const firm = s.simulation.firms.find((f) => f.id === "cafe-co")!;
+    aiBook(s, firm, "資金不足の試験", {
+      cash: -firm.book.cash,
+      debt: 100000,
+      expenses: firm.book.cash + 100000,
+    });
     const n = advanceDays(s, 1);
     expect(n.vacancies.find((v) => v.jobId === "cafe")!.openings).toBe(0);
     expect(
@@ -177,7 +184,13 @@ describe("採用・経験・成長・交流", () => {
     ).toBe(false);
   });
   it("勤務を続けると経験・能力・評価・昇給・昇格が育つ", () => {
-    const s = advanceDays(working(), 180),
+    const initial = working();
+    const firm = initial.simulation.firms.find((f) => f.id === "cafe-co")!;
+    aiBook(initial, firm, "長期勤務の検証用運転資金", {
+      cash: 10000000,
+      equity: 10000000,
+    });
+    const s = advanceDays(initial, 180),
       e = s.employments[0];
     expect(e.workedDays).toBeGreaterThan(90);
     expect(e.wage).toBeGreaterThan(1100);

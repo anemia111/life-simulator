@@ -1,3 +1,4 @@
+import { resident as initializeResident } from "../simulation/initial";
 import { releaseSites } from "../spatial/commands";
 import {
   businessTrip,
@@ -336,19 +337,33 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
     }
     case "hire": {
       if (!spend(s, v, 3000, "採用費")) throw Error("採用費が不足しています");
-      const id = "worker-" + ++s.sequence,
-        npc = {
-          ...createPerson("スタッフ " + s.sequence),
-          id,
-          employerId: v.ownerId,
-          occupation:
-            v.name + " / " + (t.policy === "manager" ? "管理" : "制作"),
-          skills: { service: 35, craft: 35, digital: 35 },
-        };
-      s.npcs.push(npc);
+      const candidate = s.simulation.residents.find(
+        (r) =>
+          !r.jobId &&
+          (!t.npcId || r.id === t.npcId) &&
+          !s.simulation.firms.some(
+            (f) => f.status === "active" && f.ownerId === r.id,
+          ) &&
+          !s.ventures.some((x) =>
+            x.employees.some((e) => e.active && e.npcId === r.id),
+          ) &&
+          s.npcs.find((p) => p.id === r.id)!.skills[
+            industryModules.get(v.industry)!.skill
+          ] >= industryModules.get(v.industry)!.minimumSkill,
+      );
+      if (!candidate)
+        throw Error(
+          "現在の労働市場に採用できる候補者がいません。時間を進めて再募集してください",
+        );
+      const npc = s.npcs.find((p) => p.id === candidate.id)!;
+      const id = "worker-" + ++s.sequence;
+      npc.employerId = v.id;
+      npc.occupation =
+        v.name + " / " + (t.policy === "manager" ? "管理" : "制作");
+      candidate.lastDecision = "条件の合うプレイヤー事業へ就職";
       v.employees.push({
         id,
-        npcId: id,
+        npcId: npc.id,
         role: t.policy === "manager" ? "manager" : "production",
         hours: 4,
         wage: 1100,
@@ -362,6 +377,11 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
       const e = v.employees.find((e) => e.id === t.npcId);
       if (!e) throw Error("従業員が見つかりません");
       e.active = false;
+      const npc = s.npcs.find((p) => p.id === e.npcId);
+      if (npc) {
+        npc.employerId = null;
+        npc.occupation = "求職中";
+      }
       break;
     }
     case "accept": {
@@ -394,7 +414,14 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
       releaseSites(s, v.id);
       v.status = "closed";
       v.subscribers = [];
-      for (const e of v.employees) e.active = false;
+      for (const e of v.employees) {
+        e.active = false;
+        const p = s.npcs.find((p) => p.id === e.npcId);
+        if (p) {
+          p.employerId = null;
+          p.occupation = "求職中";
+        }
+      }
       for (const o of v.orders)
         if (o.status === "accepted") {
           o.status = "cancelled";
@@ -460,7 +487,20 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
         if ([0, 6].includes(new Date(s.date + "T00:00:00Z").getUTCDay()))
           continue;
         const wage = e.hours * e.wage;
-        if (!spend(s, v, wage, "従業員賃金")) continue;
+        if (!spend(s, v, wage, "従業員賃金")) {
+          const r = s.simulation.residents.find((r) => r.id === e.npcId);
+          if (r) {
+            r.hours.free += r.hours.work;
+            r.hours.work = 0;
+          }
+          continue;
+        }
+        const resident = s.simulation.residents.find((r) => r.id === e.npcId);
+        if (resident) {
+          book(s, resident, "事業スタッフ給与", { cash: wage, revenue: wage });
+          resident.earned += wage;
+          resident.income = wage;
+        }
         e.paid += wage;
         e.workedHours += e.hours;
         if (e.role === "manager") managers += e.hours;
@@ -500,7 +540,9 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
       const hours =
         Math.max(0, effectiveOwn + staff - burden) *
         locationEffect(s, v, m.siteProfile).productivity;
-      demand = demandFor(s, { ...v, advertising: ad }, m);
+      demand =
+        s.simulation.markets.find((x) => x.industry === v.industry)
+          ?.allocations[v.id] ?? demandFor(s, { ...v, advertising: ad }, m);
       const productiveHours =
         s.person.skills[m.skill] >= m.minimumSkill || staff > 0
           ? hours * (1 + Math.log2(v.level)) * Math.sqrt(v.sites)

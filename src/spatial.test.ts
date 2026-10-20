@@ -1,3 +1,5 @@
+import { book as aiBook } from "./engine/enterprise/accounting";
+import { changeJob as npcJob } from "./engine/simulation";
 import "fake-indexeddb/auto";
 import { describe, it, expect } from "vitest";
 import { newGame, dispatch, advanceDays } from "./engine";
@@ -170,8 +172,14 @@ describe("Phase 3 都市・立地・物件", () => {
       a.vacancies.find((v) => v.jobId === "local-harbor")!.openings,
     );
     const initial = newGame("採用停止");
-    initial.organizations.find((o) => o.id === "local-central-co")!.cash =
-      -1000000;
+    const firm = initial.simulation.firms.find(
+      (f) => f.id === "local-central-co",
+    )!;
+    aiBook(initial, firm, "資金不足の試験", {
+      cash: -firm.book.cash,
+      debt: 1000000,
+      expenses: firm.book.cash + 1000000,
+    });
     const b = advanceDays(initial, 1);
     expect(b.vacancies.find((v) => v.jobId === "local-central")!.openings).toBe(
       0,
@@ -382,7 +390,7 @@ describe("Phase 3 都市・立地・物件", () => {
   }, 20000);
   it("v3の資金・事業・在庫・元帳を保持して在宅へ引継ぐ", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(4);
+    expect(s.schemaVersion).toBe(5);
     expect(s.cash).toBe(fixture.cash);
     expect(s.ventures).toEqual(fixture.ventures);
     expect(s.ledger).toEqual(fixture.ledger);

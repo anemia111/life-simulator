@@ -1,3 +1,5 @@
+import { book as aiBook } from "./enterprise/accounting";
+import { changeJob as npcJob } from "./simulation";
 import { describe, it, expect } from "vitest";
 import { newGame, dispatch, advanceDays } from "./index";
 import { age } from "./person";
@@ -70,6 +72,10 @@ describe("時間・生活・勤務", () => {
     s = dispatch(s, { type: "routine", routine: { activityHours: 6 } });
     s = advanceDays(s, 14);
     expect(s.person.skills.digital).toBeGreaterThan(10);
+    // 学習の検証では採用枠を確保する。通常の世界ではNPCが同じ枠を競う。
+    for (const r of s.simulation.residents.filter((r) => r.jobId === "design"))
+      npcJob(s, r, null);
+    s.vacancies.find((v) => v.jobId === "design")!.openings = 1;
     s = dispatch(s, { type: "apply", jobId: "design" });
     expect(s.employment?.jobId).toBe("design");
   });

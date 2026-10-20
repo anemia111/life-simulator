@@ -1,3 +1,4 @@
+import { districtState } from "./simulation/market";
 import { homeProperty, district } from "./spatial/selectors";
 import { moveToProperty } from "./spatial/commands";
 import type { GameState } from "./types";
@@ -80,14 +81,14 @@ export function livingExpenses(s: GameState) {
     level = standards[s.livingStandard],
     day = dayOfMonth(s.date);
   let cost = 0;
-  const charge = (amount: number, label: string) => {
-    const v = Math.round(amount * s.world.costIndex);
+  const charge = (amount: number, label: string, fixed = false) => {
+    const v = Math.round(amount * (fixed ? 1 : s.world.costIndex));
     pay(s, v, label);
     cost += v;
   };
   charge(h.daily * level.factor, "食費・日用品（" + level.name + "）");
   if (day === 1 && s.date !== s.started) {
-    charge(h.rent, h.name + " 家賃");
+    charge(h.rent, h.name + " 家賃", true);
     const lease = s.spatial.leases.find((l) => l.tenantId === "player");
     if (lease) lease.paidMonth = s.date.slice(0, 7);
   }

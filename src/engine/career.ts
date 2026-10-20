@@ -1,3 +1,6 @@
+import { applicantScore } from "./simulation/labor";
+import { payroll } from "./simulation";
+import { effectiveJobWage } from "./simulation/market";
 import { jobOffer } from "./spatial/selectors";
 import type { GameState, EmploymentContract } from "./types";
 import { jobs } from "./catalog/jobs";
@@ -17,15 +20,12 @@ export function hiringAssessment(s: GameState, id: string) {
   if (!j) throw Error("求人が見つかりません");
   const v = s.vacancies.find((v) => v.jobId === id),
     company = s.organizations.find((o) => o.id === j.employerId);
-  const score =
-    Math.round(
-      (50 +
-        s.person.skills[j.skill] * 1.5 +
-        s.person.experience[j.skill] / 20 +
-        workplaceTrust(s, j.employerId) / 10 -
-        (v?.competition ?? j.competition) * 5) *
-        10,
-    ) / 10;
+  const score = applicantScore(
+    s.person,
+    j,
+    v?.competition ?? j.competition,
+    workplaceTrust(s, j.employerId),
+  );
   const threshold = v?.threshold ?? j.threshold;
   const closed = !v || v.openings <= 0 || !company || company.cash < 0;
   const hired =
@@ -53,7 +53,7 @@ export function makeContract(s: GameState, id: string): EmploymentContract {
     workedDays: 0,
     workedHours: 0,
     absences: 0,
-    wage: j.wage,
+    wage: effectiveJobWage(s, j),
     rating: 60,
     rank: 1,
     started: s.date,
@@ -194,7 +194,7 @@ export function workDay(s: GameState, contractId?: string) {
           events.push(j.company + "：役割がLv." + e.rank + "に昇格しました");
         }
         const org = s.organizations.find((o) => o.id === e.employerId);
-        if (org) org.cash -= dailyEarned;
+        if (org) payroll(s, org.id, dailyEarned, actual);
         events.push(
           j.company + "：" + actual + "時間勤務 / " + dailyEarned + "円発生",
         );

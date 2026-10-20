@@ -1,3 +1,4 @@
+import { quotedRent } from "../simulation/market";
 import { jobs, makeContract } from "../career";
 import { assertSchedule } from "../schedule";
 import { jobOffer } from "./selectors";
@@ -28,7 +29,7 @@ export function compareSite(s: GameState, v: Enterprise, id: string) {
           propertyId: id,
           tenantId: v.id,
           started: s.date,
-          rent: p.monthlyRent,
+          rent: quotedRent(s, p),
           paidMonth: s.date.slice(0, 7),
         },
       ],
@@ -67,7 +68,7 @@ export function planMove(s: GameState, id: string) {
   return {
     contracts,
     cost:
-      Math.max(0, p.monthlyRent - currentRent) +
+      Math.max(0, quotedRent(s, p) - currentRent) +
       (p.districtId === old.districtId ? 0 : 5000),
     reason,
   };

@@ -20,19 +20,28 @@
 ## 最小実装例
 
 ```ts
-import type { IndustryModule } from './types';
-import { book } from './accounting';
+import type { IndustryModule } from "./types";
+import { book } from "./accounting";
 
 export const lessons: IndustryModule = {
-  id: 'lessons', name: '学習支援', description: '地域の需要に応じて授業を提供',
-  skill: 'service', minimumSkill: 10,
-  setup: 5000, basePrice: 2000, market: 100, capacity: 1,
-  initialize(_s, v) { v.data.lessons = 0; },
+  id: "lessons",
+  name: "学習支援",
+  description: "地域の需要に応じて授業を提供",
+  skill: "service",
+  minimumSkill: 10,
+  setup: 5000,
+  basePrice: 2000,
+  market: 100,
+  capacity: 1,
+  initialize(_s, v) {
+    v.data.lessons = 0;
+  },
   tick(s, v, hours, demand) {
     const units = Math.min(Math.floor(hours), demand);
     if (units) {
-      book(s, v, '授業料の入金', {
-        cash: units * v.price, revenue: units * v.price,
+      book(s, v, "授業料の入金", {
+        cash: units * v.price,
+        revenue: units * v.price,
       });
       v.data.lessons = Number(v.data.lessons) + units;
     }
@@ -48,18 +57,22 @@ export const lessons: IndustryModule = {
 
 `book` の引数は円整数の増減。常に `cash + inventory + equipment + receivables - debt = equity + revenue - expenses` を維持する。
 
-| 取引 | 増減 |
-|---|---|
-| 仕入 | cash −原価 / inventory ＋原価 |
-| 商品販売 | cash ＋売価 / revenue ＋売価 / inventory −原価 / expenses ＋原価 |
-| 納品 | receivables ＋報酬 / revenue ＋報酬 |
-| 売掛回収 | cash ＋報酬 / receivables −報酬 |
-| 設備 | cash −価格 / equipment ＋価格 |
-| 支出・未払 | cash −支払額 / debt ＋不足分 / expenses ＋発生額 |
-| 所有者拠出 | cash ＋資金 / equity ＋資金 |
+| 取引       | 増減                                                             |
+| ---------- | ---------------------------------------------------------------- |
+| 仕入       | cash −原価 / inventory ＋原価                                    |
+| 商品販売   | cash ＋売価 / revenue ＋売価 / inventory −原価 / expenses ＋原価 |
+| 納品       | receivables ＋報酬 / revenue ＋報酬                              |
+| 売掛回収   | cash ＋報酬 / receivables −報酬                                  |
+| 設備       | cash −価格 / equipment ＋価格                                    |
+| 支出・未払 | cash −支払額 / debt ＋不足分 / expenses ＋発生額                 |
+| 所有者拠出 | cash ＋資金 / equity ＋資金                                      |
 
 `spend(..., mandatory=false)` は払えなければfalse、必須支出のみtrueで未払を許す。仕入れ・任意投資を無料で実行しない。個人財布の変化は `Finance.post` を利用し、会社売上を直接個人へ入金しない。`verifyAccounts/verifyEnterprise` と `validateSave` で元帳・貸借・在庫・売掛を検証する。
 
 ## 互換モード
 
 旧 `engine/industries/` の文章制作・焼き菓子は従来の単一事業データを使う。Phase 0/1のセーブ・売上・投資額・自動行動を維持するための互換モードで、新3業界の法人移管機能は対象外。新規業界は `enterprise/registry.ts` を使用する。
+
+## Phase 4 のAI・市場対応
+
+新業界が自律企業としても供給する場合はsimulation/models.tsへWorldIndustryModelを登録する。有限需要、供給時間、原価率、作業持越しの契約と実装例はWORLD_SYSTEM.mdを参照。プレイヤー向けIndustryModuleの詳細処理とAIの集計供給は別境界を持ち、共通の市場配分と会計を利用する。

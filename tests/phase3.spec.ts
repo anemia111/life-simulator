@@ -96,7 +96,7 @@ test("マップで引越し→求人応募→小売の物件入居→販売→�
   await expect(page.getByRole("alert")).toHaveCount(0);
   await page.screenshot({ path: "../phase3-desktop.png", fullPage: true });
   const state = await exportState(page);
-  expect(state.schemaVersion).toBe(4);
+  expect(state.schemaVersion).toBe(5);
   expect(state.spatial.homePropertyId).toBe("residential-share");
   expect(
     state.spatial.leases.some(
@@ -195,7 +195,7 @@ test("資金不足・競合物件の入居状態・用途表示を実際の地�
     .getByRole("button", { name: "中央商業地区 生活雑貨店を選択", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "この立地の競争", exact: true }),
+    page.getByRole("heading", { name: "青葉中央商業地区商会", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "この物件を借りる", exact: false }),

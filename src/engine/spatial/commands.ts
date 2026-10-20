@@ -1,3 +1,4 @@
+import { quotedRent } from "../simulation/market";
 import { planMove } from "./preview";
 import type { GameState } from "../types";
 import { pay, requireCash } from "../finance";
@@ -29,7 +30,7 @@ export function moveToProperty(s: GameState, id: string) {
     propertyId: id,
     tenantId: "player",
     started: s.date,
-    rent: p.monthlyRent,
+    rent: quotedRent(s, p),
     paidMonth: s.date.slice(0, 7),
   });
   s.spatial.homePropertyId = id;
@@ -51,7 +52,10 @@ export function leaseProperty(s: GameState, id: string, entityId: string) {
   if (district(p.districtId).cityId !== s.spatial.cityId)
     throw Error("他都市への進出は未実装です");
   const a = v ?? c!;
-  if (a.book.debt || !spend(s, a, p.monthlyRent, "物件の当月賃料：" + p.name))
+  if (
+    a.book.debt ||
+    !spend(s, a, quotedRent(s, p), "物件の当月賃料：" + p.name)
+  )
     throw Error(
       "入居資金が不足しています。事業・会社口座へ資金を用意してください",
     );
@@ -59,7 +63,7 @@ export function leaseProperty(s: GameState, id: string, entityId: string) {
     propertyId: id,
     tenantId: entityId,
     started: s.date,
-    rent: p.monthlyRent,
+    rent: quotedRent(s, p),
     paidMonth: s.date.slice(0, 7),
   });
   if (c) c.region = district(p.districtId).name;

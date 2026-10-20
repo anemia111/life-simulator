@@ -1,3 +1,4 @@
+import { quotedRent, districtState } from "../engine/simulation/market";
 import {
   compareSite,
   planMove,
@@ -74,11 +75,15 @@ const filters = [
   ["facility", "施設"],
   ["competitor", "競合"],
 ] as const;
-const filtered = (p: Property, f: string) =>
+const filtered = (g: GameState, p: Property, f: string) =>
   f === "all" ||
-  (f === "business"
-    ? ["shop", "office", "warehouse"].includes(p.kind)
-    : p.kind === f);
+  (f === "competitor"
+    ? g.simulation.firms.some(
+        (x) => x.status === "active" && x.sites.includes(p.id),
+      )
+    : f === "business"
+      ? ["shop", "office", "warehouse"].includes(p.kind)
+      : p.kind === f);
 const execute = (actionId: string, id: string, value?: string) =>
   useGame.getState().act({ type: "execute", actionId, target: { id, value } });
 function Stats({ items }: { items: [string, string][] }) {
@@ -162,7 +167,7 @@ function LeaseActions({ g, p }: { g: GameState; p: Property }) {
           <p>
             入居口座の現金 <b>{yen(selected?.cash ?? 0)}</b>
             <br />
-            契約時の当月賃料 <b>{yen(p.monthlyRent)}</b> / 手続き1時間
+            契約時の当月賃料 <b>{yen(quotedRent(g, p))}</b> / 手続き1時間
           </p>
           <button
             className="btn primary"
@@ -203,6 +208,7 @@ function PropertyDetail({
       ? g.person.name
       : (g.ventures.find((v) => v.id === t)?.name ??
         g.companies.find((c) => c.id === t)?.name ??
+        g.simulation.firms.find((f) => f.id === t)?.name ??
         job?.company ??
         (t?.startsWith("rival-")
           ? "競合の運営会社"
@@ -235,7 +241,7 @@ function PropertyDetail({
       <Stats
         items={[
           ["面積", p.area + "㎡"],
-          ["月額賃料", yen(p.monthlyRent)],
+          ["月額賃料", yen(quotedRent(g, p))],
           ["購入参考価格", p.purchasePrice ? yen(p.purchasePrice) : "公共施設"],
           ["状態", p.condition + " / 100"],
           ["視認性", p.visibility + " / 100"],
@@ -357,19 +363,28 @@ function PropertyDetail({
           </p>
         </div>
       )}
-      {["shop", "office", "warehouse"].includes(p.kind) && (
+      {["shop", "office", "warehouse", "competitor"].includes(p.kind) && !t && (
         <LeaseActions key={p.id} g={g} p={p} />
       )}
-      {p.kind === "competitor" && (
+      {g.simulation.firms.some((f) => f.id === t) && (
         <div className="map-operation">
-          <h3>この立地の競争</h3>
+          <h3>{g.simulation.firms.find((f) => f.id === t)?.name}</h3>
           <p>
             小売の競合拠点。店舗との距離が近いほど需要の取り合いが強まり、地区の競合密度と合わせて集客を制約します。
           </p>
           <Stats
             items={[
               ["地区競合密度", "×" + d.competition.toFixed(2)],
-              ["競合価格指数", "×" + g.world.competitorPrice.toFixed(2)],
+              [
+                "販売価格",
+                yen(g.simulation.firms.find((f) => f.id === t)!.price),
+              ],
+              [
+                "実売 / 需要",
+                g.simulation.firms.find((f) => f.id === t)!.lastUnits +
+                  " / " +
+                  g.simulation.firms.find((f) => f.id === t)!.lastDemand,
+              ],
               ["競合品質指数", "×" + g.world.competitorQuality.toFixed(2)],
             ]}
           />
@@ -436,7 +451,8 @@ export default function CityMap({
   const [level, setLevel] = useState<"world" | "city" | "district">("city"),
     [districtId, setDistrict] = useState(homeProperty(g).districtId),
     [selected, setSelected] = useState<string | null>(null),
-    [filter, setFilter] = useState("all");
+    [filter, setFilter] = useState("all"),
+    [overlay, setOverlay] = useState("places");
   const city = cities.find((c) => c.id === g.spatial.cityId)!,
     d = district(districtId),
     p = selected ? property(selected) : null;
@@ -447,7 +463,7 @@ export default function CityMap({
     setSelected(p.id);
   };
   const list = properties.filter(
-    (p) => p.districtId === d.id && filtered(p, filter),
+    (p) => p.districtId === d.id && filtered(g, p, filter),
   );
   const [compact, setCompact] = useState(
     () => window.matchMedia("(max-width:700px)").matches,
@@ -532,7 +548,7 @@ export default function CityMap({
             <p>学びと働き方が交差する、あなたの生活圏。</p>
             <Stats
               items={[
-                ["人口", city.population.toLocaleString() + "人"],
+                ["人口", g.world.population.toLocaleString() + "人"],
                 ["平均月収", yen(city.income)],
                 ["家賃指数", "×" + city.rentIndex],
                 ["賃金指数", "×" + city.wageIndex],
@@ -556,12 +572,26 @@ export default function CityMap({
             <span>AOBA CITY</span>
           </div>
           <p className="map-note">
-            今回は青葉市のみ。都市のデータ構造は複数都市に対応し、都市間移住・人口推移・地価変動は今後の拡張です。
+            今回は青葉市のみ。都市のデータ構造は複数都市に対応し、都市間移住は未実装です。人口・地価・家賃相場は企業と雇用の動きに応じて毎月更新されます。
           </p>
         </section>
       ) : (
         <>
           <div className="map-filter" aria-label="マップの表示対象">
+            <label>
+              情報表示{" "}
+              <select
+                aria-label="マップ情報表示"
+                value={overlay}
+                onChange={(e) => setOverlay(e.target.value)}
+              >
+                <option value="places">施設・店舗</option>
+                <option value="population">人口密度</option>
+                <option value="land">地価</option>
+                <option value="demand">顧客需要</option>
+                <option value="jobs">求人</option>
+              </select>
+            </label>
             {filters.map(([id, label]) => (
               <button
                 key={id}
@@ -659,7 +689,8 @@ export default function CityMap({
                     districts.map((x) => {
                       const q = point(x),
                         count = properties.filter(
-                          (p) => p.districtId === x.id && filtered(p, filter),
+                          (p) =>
+                            p.districtId === x.id && filtered(g, p, filter),
                         ).length;
                       return (
                         <g
@@ -689,9 +720,11 @@ export default function CityMap({
                             height="130"
                             rx="20"
                             fill={
-                              x.id === homeProperty(g).districtId
-                                ? "#e0e9db"
-                                : "#e8eade"
+                              overlay !== "places"
+                                ? `hsl(100 20% ${92 - Math.min(30, overlay === "population" ? districtState(g, x.id).population / 1200 : overlay === "land" ? (x.landPrice * districtState(g, x.id).land) / 20000 : districtState(g, x.id).demand * 15)}%)`
+                                : x.id === homeProperty(g).districtId
+                                  ? "#e0e9db"
+                                  : "#e8eade"
                             }
                             stroke="#d2dbcb"
                           />
@@ -777,7 +810,15 @@ export default function CityMap({
                               cx={q.x}
                               cy={q.y}
                               r={isOwn ? 23 : 19}
-                              fill={colors[p.kind]}
+                              fill={
+                                g.simulation.firms.some(
+                                  (f) =>
+                                    f.status === "active" &&
+                                    f.sites.includes(p.id),
+                                )
+                                  ? "#bc7770"
+                                  : colors[p.kind]
+                              }
                               stroke={selected === p.id ? "#223f31" : "white"}
                               strokeWidth={selected === p.id ? 5 : 3}
                             />
@@ -789,7 +830,15 @@ export default function CityMap({
                               fontSize="20"
                               fontWeight="700"
                             >
-                              {isOwn ? "●" : glyphs[p.kind]}
+                              {isOwn
+                                ? "●"
+                                : g.simulation.firms.some(
+                                      (f) =>
+                                        f.status === "active" &&
+                                        f.sites.includes(p.id),
+                                    )
+                                  ? "競"
+                                  : glyphs[p.kind]}
                             </text>
                             {!compact && (
                               <text
@@ -943,7 +992,30 @@ export default function CityMap({
                           <span>
                             <b>{x.name}</b>
                             <small>
-                              {x.kind} / {x.customers.join("・")}
+                              {x.kind} /{" "}
+                              {overlay === "population"
+                                ? districtState(
+                                    g,
+                                    x.id,
+                                  ).population.toLocaleString() + "人"
+                                : overlay === "land"
+                                  ? yen(
+                                      x.landPrice * districtState(g, x.id).land,
+                                    ) + " / ㎡"
+                                  : overlay === "demand"
+                                    ? "需要 ×" +
+                                      districtState(g, x.id).demand.toFixed(3)
+                                    : overlay === "jobs"
+                                      ? g.vacancies
+                                          .filter(
+                                            (v) =>
+                                              properties.find(
+                                                (p) => p.jobId === v.jobId,
+                                              )?.districtId === x.id,
+                                          )
+                                          .reduce((n, v) => n + v.openings, 0) +
+                                        "枠"
+                                      : x.customers.join("・")}
                             </small>
                           </span>
                           <strong>家賃 ×{x.rentIndex.toFixed(2)}</strong>
@@ -958,10 +1030,23 @@ export default function CityMap({
                       <Stats
                         items={[
                           ["昼人口", d.dayPopulation.toLocaleString() + "人"],
-                          ["夜人口", d.nightPopulation.toLocaleString() + "人"],
+                          [
+                            "夜人口",
+                            districtState(g, d.id).population.toLocaleString() +
+                              "人",
+                          ],
                           ["人通り指数", String(d.footfall)],
-                          ["家賃水準", "×" + d.rentIndex.toFixed(2)],
-                          ["地価 / ㎡", yen(d.landPrice)],
+                          [
+                            "家賃水準",
+                            "×" +
+                              (
+                                d.rentIndex * districtState(g, d.id).rent
+                              ).toFixed(2),
+                          ],
+                          [
+                            "地価 / ㎡",
+                            yen(d.landPrice * districtState(g, d.id).land),
+                          ],
                           ["治安", d.safety + " / 100"],
                           ["ブランド適性", "×" + d.brandFit.toFixed(2)],
                           ["競合密度", "×" + d.competition.toFixed(2)],
@@ -984,7 +1069,7 @@ export default function CityMap({
                                 {kindNames[p.kind]} /{" "}
                                 {tenant(g, p)
                                   ? "入居中"
-                                  : yen(p.monthlyRent) + "・月"}
+                                  : yen(quotedRent(g, p)) + "・月"}
                               </small>
                             </span>
                             <ArrowUpRight size={15} />

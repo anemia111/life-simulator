@@ -1,0 +1,341 @@
+.world-page {
+  display: grid;
+  gap: 22px;
+  max-width: 1500px;
+  margin: auto;
+}
+.world-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.world-heading h1 {
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: -0.04em;
+  margin: 10px 0;
+}
+.world-heading p,
+.world-card p,
+.world-footnote {
+  color: #718071;
+  line-height: 1.8;
+  font-size: 13px;
+}
+.world-heading .eyebrow,
+.world-detail .eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #849475;
+}
+.world-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.world-metric {
+  background: #fff;
+  border: 1px solid #e3e8df;
+  border-radius: 16px;
+  padding: 22px;
+  display: grid;
+  gap: 10px;
+}
+.world-metric > span {
+  font-size: 12px;
+  color: #76816f;
+}
+.world-metric strong {
+  font-size: 28px;
+  color: #345540;
+  letter-spacing: -0.04em;
+}
+.world-metric small {
+  font-size: 11px;
+  color: #8b9484;
+}
+.world-tabs {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+  padding: 6px;
+  background: #e9eee4;
+  border-radius: 12px;
+}
+.world-tabs button {
+  background: transparent;
+  color: #7b8873;
+  padding: 12px 17px;
+  white-space: nowrap;
+  font-size: 12px;
+  border-radius: 9px;
+}
+.world-tabs button[aria-selected="true"] {
+  background: #fff;
+  color: #2e533c;
+  box-shadow: 0 2px 8px #2439200b;
+}
+.world-card {
+  padding: 26px;
+  background: #fff;
+  border: 1px solid #e3e8df;
+  border-radius: 18px;
+  min-width: 0;
+}
+.world-card h2 {
+  font-size: 17px;
+  margin: 0 0 12px;
+  color: #36513e;
+}
+.world-card h3 {
+  font-size: 13px;
+  margin-top: 26px;
+}
+.world-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+}
+.world-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.world-table-wrap {
+  overflow: auto;
+}
+.world-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 12px;
+  text-align: left;
+  margin: 14px 0 20px;
+}
+.world-table th {
+  font-weight: 500;
+}
+.world-table td,
+.world-table th {
+  padding: 16px 12px;
+  border-bottom: 1px solid #edf0e9;
+}
+.world-table thead {
+  color: #91a087;
+  font-size: 11px;
+}
+.world-table small {
+  display: block;
+  color: #8b9681;
+  font-size: 10px;
+  margin-top: 6px;
+}
+.world-details {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 1.4fr);
+  font-size: 12px;
+  gap: 17px 12px;
+  margin: 23px 0;
+}
+.world-details dt {
+  color: #87937c;
+}
+.world-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #36513e;
+  text-align: right;
+}
+.world-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.world-entity-list {
+  display: grid;
+  gap: 6px;
+  max-height: 650px;
+  overflow: auto;
+}
+.world-entity-list button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  gap: 12px;
+  padding: 16px;
+  background: #f9faf6;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #54694c;
+}
+.world-entity-list button[aria-pressed="true"] {
+  border-color: #8ca47c;
+  background: #edf2e6;
+}
+.world-entity-list strong {
+  display: block;
+  font-size: 12px;
+  color: #3a553c;
+}
+.world-entity-list small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #8d9784;
+  margin-top: 7px;
+}
+.world-negative {
+  color: #bd7770;
+}
+.world-news-mini {
+  border-bottom: 1px solid #edf0e9;
+  padding: 12px 0;
+}
+.world-news-mini time {
+  display: block;
+  font-size: 10px;
+  color: #9aa38e;
+}
+.world-text-button {
+  background: none;
+  text-decoration: underline;
+  color: #567b46;
+  padding: 0;
+}
+.world-market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.world-share {
+  margin: 20px 0;
+}
+.world-share > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+.world-share b {
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 500;
+}
+.world-share meter {
+  width: 100%;
+  height: 10px;
+  margin-top: 5px;
+  accent-color: #8aab73;
+}
+.world-news-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+.world-news-list li {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  border-bottom: 1px solid #ebefe6;
+  padding: 20px 0;
+  gap: 15px;
+}
+.world-news-list time {
+  font-size: 12px;
+  color: #9ba78e;
+}
+.world-news-list p {
+  color: #4e6447;
+  margin: 10px 0;
+}
+.world-news-list small {
+  font-size: 11px;
+  color: #a2ab99;
+}
+.world-footnote {
+  font-size: 11px;
+  margin: 0;
+}
+.world-detail {
+  position: sticky;
+  top: 15px;
+}
+@media (max-width: 1000px) {
+  .world-market-grid {
+    grid-template-columns: 1fr;
+  }
+  .world-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .world-metric strong {
+    font-size: 24px;
+  }
+}
+@media (max-width: 650px) {
+  .world-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+  .world-heading > button {
+    align-self: end;
+  }
+  .world-heading p {
+    font-size: 12px;
+  }
+  .world-split,
+  .world-two {
+    grid-template-columns: 1fr;
+  }
+  .world-card {
+    padding: 18px;
+  }
+  .world-detail {
+    position: static;
+  }
+  .world-entity-list {
+    max-height: 300px;
+  }
+  .world-tabs {
+    border-radius: 9px;
+    gap: 0;
+  }
+  .world-tabs button {
+    padding: 12px;
+    font-size: 11px;
+  }
+  .world-metric {
+    padding: 17px 13px;
+  }
+  .world-metric strong {
+    font-size: 23px;
+  }
+  .world-metric small {
+    line-height: 1.6;
+    font-size: 10px;
+  }
+  .world-section-head {
+    display: block;
+  }
+  .world-news-list li {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .world-details {
+    font-size: 11px;
+    gap: 15px 8px;
+  }
+  .world-table td,
+  .world-table th {
+    padding: 14px 10px;
+  }
+  .world-share > div {
+    flex-wrap: wrap;
+  }
+  .world-heading h1 {
+    font-size: 25px;
+  }
+}

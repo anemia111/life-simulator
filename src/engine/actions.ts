@@ -428,3 +428,51 @@ export function executeAction(
   }
   return { hours, ...def.effect(s, target, hours) };
 }
+
+add({
+  id: "meet-npc",
+  charge: true,
+  label: "地域の人物と会う",
+  category: "social",
+  hours: 1,
+  target: "npc",
+  result: "交流して関係を築く。移動時間・交通費も消費します。",
+  duration: (s, t) =>
+    1 +
+    route(
+      homeProperty(s),
+      property(
+        s.simulation.residents.find((r) => r.id === t.id)?.homeId ??
+          s.spatial.homePropertyId,
+      ),
+    ).hours *
+      2,
+  cost: (s, t) =>
+    route(
+      homeProperty(s),
+      property(
+        s.simulation.residents.find((r) => r.id === t.id)?.homeId ??
+          s.spatial.homePropertyId,
+      ),
+    ).fare * 2,
+  condition: (s, t) =>
+    s.simulation.residents.some((r) => r.id === t.id)
+      ? null
+      : "人物が見つかりません",
+  effect: (s, t) => {
+    let r = s.relationships.find((r) => r.npcId === t.id);
+    if (!r) {
+      r = {
+        npcId: t.id!,
+        affinity: 10,
+        trust: 10,
+        met: s.date,
+        interactions: 0,
+      };
+      s.relationships.push(r);
+    }
+    socialize(s, t.id!, 1);
+    const npc = s.simulation.residents.find((r) => r.id === t.id)!;
+    npc.contacts = [...new Set([...npc.contacts, "player"])].slice(-30);
+  },
+});

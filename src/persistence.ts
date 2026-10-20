@@ -1,3 +1,6 @@
+import { simulationSchema } from "./engine/simulation/schema";
+import { initialSimulation } from "./engine/simulation/initial";
+import { verifySimulation } from "./engine/simulation";
 import { spatialSchema, validateSpatial } from "./engine/spatial/schema";
 import { initialSpatial } from "./engine/spatial/catalog";
 import { createPerson } from "./engine/person";
@@ -77,7 +80,8 @@ const block = z.object({
   targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(4),
+  schemaVersion: z.literal(5),
+  simulation: simulationSchema,
   spatial: spatialSchema,
   ventures: z.array(ventureSchema),
   companies: z.array(companySchema),
@@ -291,6 +295,50 @@ export function validateSave(value: unknown): GameState {
     };
     migrated = true;
   }
+  const oldV4 =
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 4;
+  if (oldV4) {
+    const previous = schema
+      .omit({ simulation: true, schemaVersion: true })
+      .extend({ schemaVersion: z.literal(4) })
+      .safeParse(value);
+    if (!previous.success) throw Error("旧セーブ形式が不正です");
+    const upgraded = {
+      ...previous.data,
+      schemaVersion: 5,
+      simulation: null,
+    } as unknown as GameState;
+    // Fill Phase 3 catalogue references before the world starts.
+    if (migrated)
+      for (const j of jobs) {
+        if (!upgraded.organizations.some((o) => o.id === j.employerId))
+          upgraded.organizations.push({
+            id: j.employerId,
+            name: j.company,
+            kind: "employer",
+            ownerId: "npc-" + j.id,
+            cash: 500000,
+            dailyRevenue: 20000,
+            dailyCost: 12500,
+          });
+        if (!upgraded.npcs.some((p) => p.id === "npc-" + j.id))
+          upgraded.npcs.push({
+            ...createPerson("地域担当 " + j.name),
+            id: "npc-" + j.id,
+            employerId: j.employerId,
+          });
+      }
+    upgraded.simulation = initialSimulation(upgraded);
+    // A migrated player lease always takes precedence over new AI locations.
+    for (const f of upgraded.simulation.firms)
+      f.sites = f.sites.filter(
+        (id) => !upgraded.spatial.leases.some((l) => l.propertyId === id),
+      );
+    value = upgraded;
+  }
   const r = schema.safeParse(value);
   if (!r.success) throw Error("セーブ形式が不正、または未対応のバージョンです");
   const s: GameState = r.data;
@@ -323,6 +371,8 @@ export function validateSave(value: unknown): GameState {
         });
     }
   validateSpatial(s);
+  if (!verifySimulation(s))
+    throw Error("世界経済・雇用・入居・帳簿の整合性が不正です");
   if (
     s.date < s.started ||
     s.person.birthDate > s.date ||
@@ -412,8 +462,8 @@ export function validateSave(value: unknown): GameState {
   return s;
 }
 export function parseSave(json: string) {
-  if (json.length > 8000000)
-    throw Error("セーブファイルは8MB以内にしてください");
+  if (json.length > 16000000)
+    throw Error("セーブファイルは16MB以内にしてください");
   return validateSave(JSON.parse(json));
 }
 export interface SaveSlot {

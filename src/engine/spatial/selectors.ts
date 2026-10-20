@@ -1,3 +1,4 @@
+import { quotedRent, effectiveJobWage } from "../simulation/market";
 import type { GameState, Job } from "../types";
 import type { Enterprise } from "../enterprise/types";
 import type { Property, PropertyKind } from "./types";
@@ -16,7 +17,11 @@ export const district = (id: string) => {
 export const homeProperty = (s: GameState) =>
   property(s.spatial.homePropertyId);
 export const tenant = (s: GameState, p: Property) =>
-  s.spatial.leases.find((l) => l.propertyId === p.id)?.tenantId ?? p.tenantId;
+  s.spatial.leases.find((l) => l.propertyId === p.id)?.tenantId ??
+  s.simulation.firms.find(
+    (f) => f.status === "active" && f.sites.includes(p.id),
+  )?.id ??
+  (s.simulation.firms.some((f) => f.id === p.tenantId) ? null : p.tenantId);
 export function route(from: Property, to: Property) {
   const distance = Math.hypot(from.x - to.x, from.y - to.y),
     minutes =
@@ -37,6 +42,7 @@ export function jobOffer(s: GameState, j: Job) {
     base = route(property("campus-share"), destination);
   return {
     ...j,
+    wage: effectiveJobWage(s, j),
     location: cities.find((c) => c.id === d.cityId)!.name + " " + d.name,
     commute: r.hours,
     fare: Math.max(
@@ -51,7 +57,7 @@ export const businessProperties = (s: GameState, v: Enterprise) =>
     .map((l) => property(l.propertyId));
 export function allowed(p: Property, industry: string) {
   return (
-    ["shop", "office", "warehouse"].includes(p.kind) &&
+    ["shop", "office", "warehouse", "competitor"].includes(p.kind) &&
     (p.allowedIndustries.includes("*") ||
       p.allowedIndustries.includes(industry))
   );

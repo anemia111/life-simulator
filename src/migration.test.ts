@@ -1,3 +1,4 @@
+import { book as aiBook } from "./engine/enterprise/accounting";
 import "fake-indexeddb/auto";
 import { describe, it, expect } from "vitest";
 import fixture from "../tests/fixtures/v1-save.json";
@@ -51,7 +52,7 @@ describe("公開v0.1セーブからPhase 1へ", () => {
   });
   it("実際の公開版の現金・債務・給与・事業・設備・能力・日付を維持", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(4);
+    expect(s.schemaVersion).toBe(5);
     expect(s.cash).toBe(fixture.cash);
     expect(s.debt).toBe(fixture.debt);
     expect(s.bank).toBe(0);
@@ -67,6 +68,10 @@ describe("公開v0.1セーブからPhase 1へ", () => {
   it("移行後に1年進行・掛け持ち・保存ができる", () => {
     let s = validateSave(fixture);
     s = dispatch(s, { type: "apply", jobId: "convenience" });
+    expect(s.employments).toHaveLength(2);
+    // 保存互換・掛け持ちの長期試験は資金十分な雇用主で行う。
+    for (const f of s.simulation.firms)
+      aiBook(s, f, "回帰試験の企業出資", { cash: 10000000, equity: 10000000 });
     s = advanceDays(s, 365);
     expect(s.employments).toHaveLength(2);
     expect(s.business!.revenue).toBeGreaterThan(fixture.business.revenue);
@@ -95,7 +100,7 @@ describe("公開v0.1セーブからPhase 1へ", () => {
       };
     });
     const s = await loadGame(1);
-    expect(s.schemaVersion).toBe(4);
+    expect(s.schemaVersion).toBe(5);
     expect((await listSaves())[0].state.cash).toBe(fixture.cash);
     await saveGame(1, s);
     expect(await loadGame(1)).toEqual(s);

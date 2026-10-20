@@ -38,7 +38,10 @@ export function validateSpatial(s: GameState) {
       v = s.ventures.find((v) => v.id === l.tenantId && v.status !== "closed"),
       c = s.companies.find((c) => c.id === l.tenantId && c.status === "active");
     if (
-      p.tenantId ||
+      (p.tenantId &&
+        !s.simulation.firms.some(
+          (f) => f.id === p.tenantId && f.status === "closed",
+        )) ||
       !districts.some(
         (d) => d.id === p.districtId && d.cityId === s.spatial.cityId,
       ) ||

@@ -1,3 +1,4 @@
+import type { Simulation } from "./simulation/types";
 import type { SpatialState } from "./spatial/types";
 import type { Enterprise, Company, EnterpriseInput } from "./enterprise/types";
 export type Skill = "service" | "craft" | "digital";
@@ -188,7 +189,8 @@ export interface Routine {
   socialTarget: string | null;
 }
 export interface GameState {
-  schemaVersion: 4;
+  schemaVersion: 5;
+  simulation: Simulation;
   spatial: SpatialState;
   ventures: Enterprise[];
   companies: Company[];

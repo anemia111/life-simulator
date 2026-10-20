@@ -1,3 +1,4 @@
+import { initialSimulation } from "./engine/simulation/initial";
 import { initialSpatial } from "./engine/spatial/catalog";
 import { validateLegacy } from "./legacy-save";
 import { newGame } from "./engine";
@@ -130,5 +131,6 @@ export function migrateV1(value: unknown) {
     ...old.notices,
   ].slice(0, 12);
   s.spatial = initialSpatial(s.housingId, s.started, s.date);
+  s.simulation = initialSimulation(s);
   return s;
 }
