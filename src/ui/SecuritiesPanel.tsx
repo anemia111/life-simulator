@@ -178,7 +178,14 @@ export default function SecuritiesPanel({ g }: { g: GameState }) {
           <button
             key={id}
             className={tab === id ? "selected" : ""}
-            onClick={() => setTab(id)}
+            onClick={() => {
+              setTab(id);
+              if (id === "stocks" && i.kind !== "stock")
+                choose(
+                  x.instruments.find((stock) => stock.kind === "stock")!.id,
+                );
+              if (id === "funds" && !fund) choose(x.funds[0].instrumentId);
+            }}
           >
             {label}
           </button>
@@ -399,7 +406,7 @@ export default function SecuritiesPanel({ g }: { g: GameState }) {
               </p>
               <button
                 className="primary"
-                disabled={i.status !== "listed"}
+                disabled={i.status !== "listed" || i.kind === "mutual"}
                 type="submit"
               >
                 注文を出す
@@ -590,6 +597,47 @@ export default function SecuritiesPanel({ g }: { g: GameState }) {
                     <dd>{held(a, i.id)}</dd>
                   </div>
                 </dl>
+                <details>
+                  <summary>組入銘柄と実保有数を見る</summary>
+                  <p>
+                    現金 {yen(account(g, fund.accountId).book.cash)} / 累計費用{" "}
+                    {yen(fund.feesAccrued)} / 累計分配 {yen(fund.distributed)}
+                  </p>
+                  <div className="market-scroll" style={{ maxHeight: 360 }}>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>銘柄</th>
+                          <th>保有株数</th>
+                          <th>時価</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {account(g, fund.accountId)
+                          .positions.filter((p) => p.quantity)
+                          .map((p) => {
+                            const stock = x.instruments.find(
+                              (stock) => stock.id === p.instrumentId,
+                            )!;
+                            return (
+                              <tr key={p.instrumentId}>
+                                <td>{stock.name}</td>
+                                <td>{number(p.quantity)}</td>
+                                <td>
+                                  {yen(
+                                    p.quantity *
+                                      (stock.status === "listed"
+                                        ? stock.price
+                                        : 0),
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
                 <div className="market-form">
                   {moneyInput("ファンド口数", quantity, setQuantity)}
                   <button

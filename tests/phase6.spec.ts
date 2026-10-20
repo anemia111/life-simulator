@@ -59,6 +59,8 @@ test("証券入金・買付・約定・取消・投信購入を実操作し元�
     .getByRole("button", { name: "指数・ファンド", exact: true })
     .click();
   await page.getByRole("button", { name: /積立/ }).first().click();
+  await page.getByText("組入銘柄と実保有数を見る", { exact: true }).click();
+  await expect(page.locator("details tbody tr")).toHaveCount(225);
   await page.getByLabel("ファンド口数").fill("10");
   await page.getByRole("button", { name: "購入する", exact: true }).click();
   await page.screenshot({
@@ -94,13 +96,11 @@ test("会社IPOを申請し公募資金と個人売出代金を分離", async ({
   book(s, c, "試験の既存事業利益", { cash: 20000, revenue: 20000 });
   await begin(page);
   await go(page, "セーブ・設定");
-  await page
-    .getByLabel("JSONを取り込む")
-    .setInputFiles({
-      name: "ipo-ready.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(s)),
-    });
+  await page.getByLabel("JSONを取り込む").setInputFiles({
+    name: "ipo-ready.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(s)),
+  });
   await go(page, "証券・投資");
   await page.getByRole("button", { name: "IPO・株主", exact: true }).click();
   await page.getByLabel("対象会社").selectOption(c.id);
@@ -144,6 +144,8 @@ test("320pxスマホで225社検索・ファンド・資産の表示が収まる
       ),
     ).toBe(true);
   }
+  await page.getByRole("button", { name: "銘柄を探す", exact: true }).click();
+  await expect(page.locator(".market-detail h2")).not.toHaveText(/投信|ETF/);
   await page.screenshot({
     path: "../phase6-market-mobile.png",
     fullPage: true,
