@@ -1,3 +1,10 @@
+import {
+  initialSpatial,
+  districts,
+  jobDistricts,
+  cities,
+} from "./spatial/catalog";
+import { locationRents } from "./spatial/commands";
 import { runEnterpriseDay } from "./enterprise";
 import type { GameState, Command } from "./types";
 import { createPerson } from "./person";
@@ -45,7 +52,7 @@ export function newGame(
     "中村 みお",
   ];
   const npcs = jobs.map((j, n) => ({
-    ...createPerson(names[n]),
+    ...createPerson(names[n] ?? "地域担当 " + (n + 1)),
     id: "npc-" + j.id,
     birthDate: 1985 + n + "-06-15",
     occupation: j.name + " / 店長",
@@ -54,7 +61,8 @@ export function newGame(
     skills: { service: 40 + n, craft: 35 + n, digital: 30 + n },
   }));
   const s: GameState = {
-    schemaVersion: 3,
+    schemaVersion: 4,
+    spatial: initialSpatial(),
     ventures: [],
     companies: [],
     person: createPerson(name),
@@ -122,7 +130,18 @@ function companyDay(s: GameState) {
     v.openings =
       o.cash < 0
         ? 0
-        : Math.max(0, 2 - s.employments.filter((e) => e.jobId === j.id).length);
+        : Math.max(
+            0,
+            Math.round(
+              2 *
+                (districts.find(
+                  (d) =>
+                    d.id === (jobDistricts[j.id] ?? j.id.replace("local-", "")),
+                )?.demand.retail ?? 1) *
+                (1 - cities[0].unemployment) *
+                s.world.economy,
+            ) - s.employments.filter((e) => e.jobId === j.id).length,
+          );
     v.competition = Math.round((j.competition / s.world.economy) * 100) / 100;
     v.threshold = j.threshold + (o.cash < 100000 ? 3 : 0);
   }
@@ -186,7 +205,30 @@ export function advanceDays(state: GameState, days: number) {
         }
       }
     }
-    runEnterpriseDay(s, id === "enterprise-work" ? performed : 0);
+    locationRents(s);
+    const enterpriseDay = runEnterpriseDay(
+      s,
+      id === "enterprise-work" ? performed : 0,
+    );
+    if (id === "enterprise-work") {
+      const used = Math.min(
+        performed,
+        Math.max(
+          0,
+          Math.ceil(
+            (enterpriseDay.ownerHours + enterpriseDay.travelHours - 1e-9) * 2,
+          ) / 2,
+        ),
+      );
+      if (used < performed)
+        events.push("事業拠点への移動・作業時間が足りない割当は休息へ");
+      s.person.energy = Math.min(
+        energyLimit(s),
+        s.person.energy + (performed - used) * 2,
+      );
+      performed = used;
+    }
+
     let remaining = performed;
     const actualBlocks = blocks.flatMap((b) => {
       if (b.kind === "work") {
@@ -229,6 +271,26 @@ export function advanceDays(state: GameState, days: number) {
         ];
       }
       return [b];
+    });
+    let siteTravel = s.ventures.reduce(
+      (n, v) => n + Number(v.data.siteCommuteHours ?? 0),
+      0,
+    );
+    const locatedBlocks = actualBlocks.flatMap((b) => {
+      if (b.kind !== "activity" || siteTravel <= 0) return [b];
+      const travel = Math.min(b.hours, siteTravel);
+      siteTravel -= travel;
+      return [
+        {
+          ...b,
+          kind: "commute" as const,
+          label: "事業拠点への移動",
+          hours: travel,
+        },
+        ...(travel < b.hours
+          ? [{ ...b, start: b.start + travel, hours: b.hours - travel }]
+          : []),
+      ];
     });
     studyHours += s.manualActions
       .filter((a) => actionRegistry.get(a.actionId)?.category === "study")
@@ -273,14 +335,14 @@ export function advanceDays(state: GameState, days: number) {
       workHours,
       sleepHours: s.routine.sleepHours,
       studyHours,
-      commuteHours: actualBlocks
+      commuteHours: locatedBlocks
         .filter((b) => b.kind === "commute")
         .reduce((a, b) => a + b.hours, 0),
       freeHours,
-      activityHours: performed,
+      activityHours: performed - enterpriseDay.travelHours,
       energy: s.person.energy,
       satisfaction: s.person.satisfaction,
-      blocks: actualBlocks,
+      blocks: locatedBlocks,
       events,
     });
     s.history = s.history.slice(-365);

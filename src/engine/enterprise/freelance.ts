@@ -1,6 +1,7 @@
 import type { IndustryModule } from "./types";
 import { book } from "./accounting";
 export const freelance: IndustryModule = {
+  siteProfile: { locality: 0.4, storage: false },
   id: "freelance",
   name: "フリーランス・サービス",
   description:

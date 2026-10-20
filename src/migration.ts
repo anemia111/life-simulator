@@ -1,3 +1,4 @@
+import { initialSpatial } from "./engine/spatial/catalog";
 import { validateLegacy } from "./legacy-save";
 import { newGame } from "./engine";
 import { makeContract, jobs, syncEmployment } from "./engine/career";
@@ -128,5 +129,6 @@ export function migrateV1(value: unknown) {
     "Phase 1へ移行しました。旧勤務時間は勤務日数×所定時間で推定しています。",
     ...old.notices,
   ].slice(0, 12);
+  s.spatial = initialSpatial(s.housingId, s.started, s.date);
   return s;
 }

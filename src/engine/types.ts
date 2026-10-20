@@ -1,3 +1,4 @@
+import type { SpatialState } from "./spatial/types";
 import type { Enterprise, Company, EnterpriseInput } from "./enterprise/types";
 export type Skill = "service" | "craft" | "digital";
 export type Action = string;
@@ -187,7 +188,8 @@ export interface Routine {
   socialTarget: string | null;
 }
 export interface GameState {
-  schemaVersion: 3;
+  schemaVersion: 4;
+  spatial: SpatialState;
   ventures: Enterprise[];
   companies: Company[];
   person: Person;

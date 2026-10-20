@@ -1,3 +1,8 @@
+import {
+  businessProperties,
+  district,
+  properties,
+} from "../engine/spatial/selectors";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import type { GameState } from "../engine/types";
@@ -344,7 +349,15 @@ function CreateVenture({ g }: { g: GameState }) {
     </Card>
   );
 }
-function VentureDetail({ g, v }: { g: GameState; v: Enterprise }) {
+function VentureDetail({
+  g,
+  v,
+  onMap,
+}: {
+  g: GameState;
+  v: Enterprise;
+  onMap?: () => void;
+}) {
   const [tab, setTab] = useState("analysis"),
     [close, setClose] = useState(false),
     [corp, setCorp] = useState(
@@ -396,6 +409,26 @@ function VentureDetail({ g, v }: { g: GameState; v: Enterprise }) {
           ],
         ]}
       />
+      <div className="map-site-summary">
+        <b>事業の立地</b>
+        <br />
+        {businessProperties(g, v).length
+          ? businessProperties(g, v).map((p) => (
+              <span key={p.id}>
+                {p.name} / 月額{" "}
+                {yen(
+                  g.spatial.leases.find((l) => l.propertyId === p.id)?.rent ??
+                    0,
+                )}
+                <br />
+              </span>
+            ))
+          : "在宅運営：追加家賃なし。物件に入居すると需要・効率・通勤・家賃が変化します。"}
+        <br />
+        <button className="btn secondary" onClick={onMap}>
+          マップで事業拠点を探す
+        </button>
+      </div>
       <div className="enterprise-tabs" role="tablist" aria-label="事業管理">
         {tabs.map(([id, label]) => (
           <button
@@ -860,7 +893,13 @@ function VentureDetail({ g, v }: { g: GameState; v: Enterprise }) {
     </Card>
   );
 }
-export function EnterprisePanel({ g }: { g: GameState }) {
+export function EnterprisePanel({
+  g,
+  onMap,
+}: {
+  g: GameState;
+  onMap?: () => void;
+}) {
   const [selected, setSelected] = useState(""),
     [showCreate, setCreate] = useState(g.ventures.length === 0);
   const v = g.ventures.find((v) => v.id === selected) ?? g.ventures.at(-1);
@@ -944,11 +983,17 @@ export function EnterprisePanel({ g }: { g: GameState }) {
           </button>
         ))}
       </div>
-      {v && <VentureDetail key={v.id} g={g} v={v} />}
+      {v && <VentureDetail key={v.id} g={g} v={v} onMap={onMap} />}
     </div>
   );
 }
-export function CompanyPanel({ g }: { g: GameState }) {
+export function CompanyPanel({
+  g,
+  onMap,
+}: {
+  g: GameState;
+  onMap?: () => void;
+}) {
   const [name, setName] = useState("青葉ラボ株式会社"),
     [capital, setCapital] = useState(30000),
     [selected, setSelected] = useState(""),
@@ -1086,6 +1131,22 @@ export function CompanyPanel({ g }: { g: GameState }) {
               ["累計配当", yen(c.dividends)],
             ]}
           />
+          <div className="map-site-summary">
+            <b>本店・オフィス</b>
+            <br />
+            {g.spatial.leases
+              .filter((l) => l.tenantId === c.id)
+              .map((l) => (
+                <span key={l.propertyId}>
+                  {properties.find((p) => p.id === l.propertyId)?.name} / 月額{" "}
+                  {yen(l.rent)}
+                  <br />
+                </span>
+              ))}
+            <button className="btn secondary" onClick={onMap}>
+              マップで本店物件を探す
+            </button>
+          </div>
           <h3>保有事業</h3>
           {companyVentures(g, c).length === 0 ? (
             <p>

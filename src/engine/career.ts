@@ -1,3 +1,4 @@
+import { jobOffer } from "./spatial/selectors";
 import type { GameState, EmploymentContract } from "./types";
 import { jobs } from "./catalog/jobs";
 import { receive, pay, monthReport } from "./finance";
@@ -59,7 +60,7 @@ export function makeContract(s: GameState, id: string): EmploymentContract {
     weekdays: [...j.weekdays],
     start: j.start,
     hours: j.hours,
-    commute: j.commute,
+    commute: jobOffer(s, j).commute,
     absentNext: false,
     month: "",
     monthHours: 0,
@@ -180,7 +181,7 @@ export function workDay(s: GameState, contractId?: string) {
           s.person.skills[j.skill] + actual * 0.06,
         );
         s.person.satisfaction = Math.min(100, s.person.satisfaction + 0.15);
-        const fare = Math.round(j.fare * s.world.costIndex);
+        const fare = Math.round(jobOffer(s, j).fare * s.world.costIndex);
         pay(s, fare, "交通費：" + j.company);
         spending += fare;
         s.totals.living += fare;

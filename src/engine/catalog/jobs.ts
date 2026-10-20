@@ -1,3 +1,4 @@
+import { districts, cities } from "../spatial/catalog";
 import type { Job } from "../types";
 const weekdays = [1, 2, 3, 4, 5];
 const make = (
@@ -161,3 +162,25 @@ export const jobs: Job[] = [
     description: "週末の午後だけ。少ない勤務日で暮らしに余白を。",
   }),
 ];
+
+for (const d of districts)
+  jobs.push(
+    make({
+      id: "local-" + d.id,
+      employerId: "local-" + d.id + "-co",
+      name: d.name + "の地域スタッフ",
+      company: d.name + " 生活サービス",
+      location: "青葉市 " + d.name,
+      industry: "地域サービス",
+      wage: Math.round((1100 * d.wageIndex * cities[0].wageIndex) / 10) * 10,
+      hours: 4,
+      start: 10,
+      weekdays: [1, 3, 5],
+      skill: "service",
+      requirement: d.wageIndex >= 1.2 ? 8 : 0,
+      competition: 1.2,
+      threshold: d.wageIndex >= 1.2 ? 50 : 40,
+      description:
+        "地区の所得・賃金水準から生成した地域求人。近隣での生活と両立。",
+    }),
+  );

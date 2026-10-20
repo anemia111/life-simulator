@@ -1,3 +1,6 @@
+import { lazy, Suspense } from "react";
+import { LocationSummary } from "./ui/LocationSummary";
+const CityMap = lazy(() => import("./ui/CityMap"));
 import { personalEnterpriseProfit } from "./engine/enterprise/accounting";
 import { EnterprisePanel, CompanyPanel } from "./ui/Phase2";
 import { useEffect, useState } from "react";
@@ -26,6 +29,7 @@ import {
   Heart,
   Zap,
   Menu,
+  MapPin,
   X,
   Coffee,
   Sprout,
@@ -60,6 +64,7 @@ import type { SaveSlot } from "./persistence";
 const yen = (v: number) => "¥" + Math.round(v).toLocaleString("ja-JP");
 const nav = [
   { id: "overview", label: "ダッシュボード", icon: LayoutDashboard },
+  { id: "map", label: "都市マップ", icon: MapPin },
   { id: "career", label: "仕事を探す", icon: BriefcaseBusiness },
   { id: "shifts", label: "仕事・シフト管理", icon: Clock },
   { id: "calendar", label: "カレンダー", icon: CalendarDays },
@@ -1026,7 +1031,7 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.3 ·
+          v0.4 ·
           24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、設備所有、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
@@ -1117,7 +1122,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.3</span>
+            <span>v0.4</span>
           </div>
         </div>
       </aside>
@@ -1159,7 +1164,14 @@ export default function App() {
             </div>
           )}
           {page === "overview" ? (
-            <Overview g={g} go={go} />
+            <>
+              <LocationSummary g={g} onMap={() => go("map")} />
+              <Overview g={g} go={go} />
+            </>
+          ) : page === "map" ? (
+            <Suspense fallback={<p>都市マップを読み込んでいます…</p>}>
+              <CityMap g={g} go={go} />
+            </Suspense>
           ) : page === "career" ? (
             <Career g={g} />
           ) : page === "shifts" ? (
@@ -1183,7 +1195,7 @@ export default function App() {
             <ReportsPanel g={g} />
           ) : page === "business" ? (
             <>
-              <EnterprisePanel g={g} />
+              <EnterprisePanel g={g} onMap={() => go("map")} />
               <div className="legacy-business">
                 <span className="eyebrow">PHASE 0 / 1 COMPATIBILITY</span>
                 <p>
@@ -1193,7 +1205,7 @@ export default function App() {
               </div>
             </>
           ) : page === "companies" ? (
-            <CompanyPanel g={g} />
+            <CompanyPanel g={g} onMap={() => go("map")} />
           ) : page === "finance" ? (
             <Finance g={g} />
           ) : page === "skills" ? (
@@ -1205,7 +1217,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · PHASE 2</span>
+            <span>LIFE SIMULATOR · PHASE 3</span>
           </footer>
         </main>
         <div className="time-dock">

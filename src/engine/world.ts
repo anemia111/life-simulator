@@ -1,6 +1,7 @@
+import {cities} from "./spatial/catalog";
 export const createWorld = () => ({
-  city: "青葉市",
-  population: 120000,
+  city: cities[0].name,
+  population: cities[0].population,
   economy: 1,
   costIndex: 1,
   competitorPrice: 1,

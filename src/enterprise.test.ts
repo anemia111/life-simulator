@@ -345,7 +345,7 @@ describe("Phase 2 共通所有権・会計・時間", () => {
   });
   it("v2の現金・事業・給与・能力を保存移行後も維持", () => {
     const s = validateSave(v2);
-    expect(s.schemaVersion).toBe(3);
+    expect(s.schemaVersion).toBe(4);
     expect(s.business).toEqual(v2.business);
     expect(s.cash).toBe(v2.cash);
     expect(s.assets).toEqual(v2.assets);

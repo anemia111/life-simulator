@@ -26,6 +26,7 @@ export function purchase(s: GameState, v: Enterprise, q: number) {
   book(s, v, "商品仕入", { cash: -cost, inventory: cost });
 }
 export const retail: IndustryModule = {
+  siteProfile: { locality: 0.85, storage: true },
   id: "retail",
   name: "ネット販売・小売",
   description:

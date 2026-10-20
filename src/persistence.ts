@@ -1,3 +1,6 @@
+import { spatialSchema, validateSpatial } from "./engine/spatial/schema";
+import { initialSpatial } from "./engine/spatial/catalog";
+import { createPerson } from "./engine/person";
 import { ventureSchema, companySchema } from "./engine/enterprise/schema";
 import {
   verifyEnterprise,
@@ -74,7 +77,8 @@ const block = z.object({
   targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(3),
+  schemaVersion: z.literal(4),
+  spatial: spatialSchema,
   ventures: z.array(ventureSchema),
   companies: z.array(companySchema),
   person: person.extend({ id: z.literal("player") }),
@@ -268,9 +272,57 @@ export function validateSave(value: unknown): GameState {
     value.schemaVersion === 2
   )
     value = { ...value, schemaVersion: 3, ventures: [], companies: [] };
+  let migrated = false;
+  if (
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 3
+  ) {
+    const old = value as {
+      housingId?: string;
+      started?: string;
+      date?: string;
+    };
+    value = {
+      ...value,
+      schemaVersion: 4,
+      spatial: initialSpatial(old.housingId ?? "share", old.started, old.date),
+    };
+    migrated = true;
+  }
   const r = schema.safeParse(value);
   if (!r.success) throw Error("セーブ形式が不正、または未対応のバージョンです");
   const s: GameState = r.data;
+  if (migrated)
+    for (const j of jobs) {
+      if (!s.organizations.some((o) => o.id === j.employerId))
+        s.organizations.push({
+          id: j.employerId,
+          name: j.company,
+          kind: "employer",
+          ownerId: "npc-" + j.id,
+          cash: 500000,
+          dailyRevenue: 20000,
+          dailyCost: 12500,
+        });
+      if (!s.vacancies.some((v) => v.jobId === j.id))
+        s.vacancies.push({
+          jobId: j.id,
+          employerId: j.employerId,
+          openings: 2,
+          competition: j.competition,
+          threshold: j.threshold,
+        });
+      if (!s.npcs.some((p) => p.id === "npc-" + j.id))
+        s.npcs.push({
+          ...createPerson("地域担当 " + j.name),
+          id: "npc-" + j.id,
+          employerId: j.employerId,
+          occupation: j.name + " / 担当者",
+        });
+    }
+  validateSpatial(s);
   if (
     s.date < s.started ||
     s.person.birthDate > s.date ||

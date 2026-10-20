@@ -1,3 +1,9 @@
+import { releaseSites } from "../spatial/commands";
+import {
+  businessTrip,
+  locationEffect,
+  businessProperties,
+} from "../spatial/selectors";
 import type { GameState } from "../types";
 import type { Company, Enterprise, EnterpriseInput } from "./types";
 import {
@@ -236,6 +242,7 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
         );
       book(s, c, "解散・残余財産分配", { cash: -cash, equity: -cash });
       if (mine) receive(s, mine, "会社解散の残余財産", "transfer", "bank");
+      releaseSites(s, c.id);
       c.status = "dissolved";
     }
     return;
@@ -384,6 +391,7 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
       break;
     }
     case "close": {
+      releaseSites(s, v.id);
       v.status = "closed";
       v.subscribers = [];
       for (const e of v.employees) e.active = false;
@@ -440,7 +448,9 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
       v.status === "active" && totalWeight
         ? (ownerHours * v.weight) / totalWeight
         : 0;
-    let staff = 0,
+    v.data.siteCommuteHours = 0;
+    let workedOwn = 0,
+      staff = 0,
       managers = 0,
       demand = 0,
       capacity = 0,
@@ -474,9 +484,22 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
         0,
         0.15 * v.sites +
           0.05 * v.employees.filter((e) => e.active).length -
-          managers,
+          managers -
+          locationEffect(s, v, m.siteProfile).managementSupport,
       );
-      const hours = Math.max(0, own + staff - burden);
+      const hasSite = businessProperties(s, v).length > 0,
+        trip = businessTrip(s, v, own);
+      v.data.siteCommuteHours = trip.hours;
+      if (trip.hours) {
+        pay(s, trip.fare, "事業拠点への交通費：" + v.name);
+        s.totals.living += trip.fare;
+      }
+      const effectiveOwn =
+        hasSite && trip.hours === 0 ? 0 : Math.max(0, own - trip.hours);
+      workedOwn = effectiveOwn;
+      const hours =
+        Math.max(0, effectiveOwn + staff - burden) *
+        locationEffect(s, v, m.siteProfile).productivity;
       demand = demandFor(s, { ...v, advertising: ad }, m);
       const productiveHours =
         s.person.skills[m.skill] >= m.minimumSkill || staff > 0
@@ -484,12 +507,12 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
           : 0;
       capacity = Math.floor(productiveHours * m.capacity);
       if (funded) units = m.tick(s, v, productiveHours, demand);
-      if (own) {
+      if (effectiveOwn) {
         s.person.skills[m.skill] = Math.min(
           100,
-          s.person.skills[m.skill] + own * 0.08,
+          s.person.skills[m.skill] + effectiveOwn * 0.08,
         );
-        s.person.experience[m.skill] += own;
+        s.person.experience[m.skill] += effectiveOwn;
       }
     }
     settle(s, v);
@@ -498,7 +521,7 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
       demand,
       capacity,
       units,
-      ownerHours: own,
+      ownerHours: workedOwn,
       staffHours: staff,
       revenue: v.journal
         .filter((e) => e.date === s.date)
@@ -522,4 +545,11 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
             .slice(-100),
         );
   }
+  return {
+    ownerHours: s.ventures.reduce((n, v) => n + v.last.ownerHours, 0),
+    travelHours: s.ventures.reduce(
+      (n, v) => n + Number(v.data.siteCommuteHours ?? 0),
+      0,
+    ),
+  };
 }

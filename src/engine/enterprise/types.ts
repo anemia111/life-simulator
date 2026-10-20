@@ -128,6 +128,7 @@ export interface Company extends Accounts {
   status: "active" | "dissolved";
 }
 export interface IndustryModule {
+  siteProfile?: { locality: number; storage: boolean };
   id: string;
   name: string;
   description: string;

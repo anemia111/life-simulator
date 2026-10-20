@@ -1,3 +1,5 @@
+import { homeProperty, district } from "./spatial/selectors";
+import { moveToProperty } from "./spatial/commands";
 import type { GameState } from "./types";
 import { pay } from "./finance";
 import { dayOfMonth } from "./time";
@@ -35,8 +37,21 @@ export const standards = {
   balanced: { name: "標準", factor: 1, satisfaction: 0.15 },
   comfortable: { name: "ゆとり", factor: 1.5, satisfaction: 0.5 },
 };
-export const home = (s: GameState) =>
-  housing.find((h) => h.id === s.housingId)!;
+export const home = (s: GameState) => {
+  const p = homeProperty(s),
+    d = district(p.districtId),
+    h = housing.find((h) => h.id === s.housingId)!;
+  return {
+    ...h,
+    name: p.name,
+    rent:
+      s.spatial.leases.find((l) => l.propertyId === p.id)?.rent ??
+      p.monthlyRent,
+    daily: h.daily * d.livingIndex,
+    utilities: h.utilities * d.livingIndex,
+    recovery: h.recovery + (d.safety - 80) / 10,
+  };
+};
 export const energyLimit = (s: GameState) => 100 - s.person.sleepDebt * 0.8;
 export function sleepAndRecover(s: GameState) {
   const hours = s.routine.sleepHours;
@@ -71,7 +86,11 @@ export function livingExpenses(s: GameState) {
     cost += v;
   };
   charge(h.daily * level.factor, "食費・日用品（" + level.name + "）");
-  if (day === 1 && s.date !== s.started) charge(h.rent, h.name + " 家賃");
+  if (day === 1 && s.date !== s.started) {
+    charge(h.rent, h.name + " 家賃");
+    const lease = s.spatial.leases.find((l) => l.tenantId === "player");
+    if (lease) lease.paidMonth = s.date.slice(0, 7);
+  }
   if (day === 10) charge(h.utilities, "光熱費");
   if (day === 15) charge(2500, "通信費");
   s.totals.living += cost;
@@ -79,7 +98,10 @@ export function livingExpenses(s: GameState) {
     0,
     Math.min(
       100,
-      s.person.satisfaction + level.satisfaction - (s.debt > s.loan ? 0.3 : 0),
+      s.person.satisfaction +
+        level.satisfaction +
+        (district(homeProperty(s).districtId).safety - 80) * 0.002 -
+        (s.debt > s.loan ? 0.3 : 0),
     ),
   );
   if (s.person.energy < 15)
@@ -87,14 +109,6 @@ export function livingExpenses(s: GameState) {
   return cost;
 }
 export function moveHome(s: GameState, id: string) {
-  const h = housing.find((h) => h.id === id);
-  if (!h) throw Error("住居が不正です");
-  if (h.id === s.housingId) return;
-  const cost = Math.round(
-    Math.max(0, h.rent - home(s).rent) * s.world.costIndex,
-  );
-  if (s.cash + s.bank < cost) throw Error("住み替え資金が足りません");
-  pay(s, cost, "住み替え差額");
-  s.totals.living += cost;
-  s.housingId = id;
+  if (!housing.some((h) => h.id === id)) throw Error("住居が不正です");
+  moveToProperty(s, homeProperty(s).districtId + "-" + id);
 }

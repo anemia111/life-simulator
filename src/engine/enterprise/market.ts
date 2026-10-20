@@ -1,3 +1,4 @@
+import { locationEffect } from "../spatial/selectors";
 import type { GameState } from "../types";
 import type { Enterprise, IndustryModule } from "./types";
 export const regions = {
@@ -6,15 +7,16 @@ export const regions = {
   online: { name: "オンライン", market: 1, income: 1, cost: 1 },
 };
 export function attraction(v: Enterprise, m: IndustryModule, s: GameState) {
-  const r = regions[v.region];
+  const r = regions[v.region],
+    geo = locationEffect(s, v, m.siteProfile);
   return (
-    (Math.pow((m.basePrice * r.income) / v.price, 1.4) *
+    (Math.pow((m.basePrice * r.income * geo.income) / v.price, 1.4) *
       (0.5 + v.quality / 100) *
       (0.5 + v.rating / 100) *
       (1 + Math.log1p(v.brand) / 4) *
       (1 + Math.log1p(v.advertising / 500) / 3) *
       (1 + Math.log1p(v.channels - 1) / 2)) /
-    s.world.competitorQuality
+    (s.world.competitorQuality * geo.competition)
   );
 }
 export function demandFor(s: GameState, v: Enterprise, m: IndustryModule) {
@@ -37,6 +39,7 @@ export function demandFor(s: GameState, v: Enterprise, m: IndustryModule) {
         (s.world.population / 120000) *
         s.world.economy *
         regions[v.region].market *
+        locationEffect(s, v, m.siteProfile).market *
         own) /
         (external + total),
     ),

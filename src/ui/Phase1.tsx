@@ -1,3 +1,4 @@
+import { jobOffer } from "../engine/spatial/selectors";
 import { PersonalBusinessFinance } from "./Phase2";
 import { enterpriseWealth } from "../engine/enterprise/accounting";
 import { useState } from "react";
@@ -71,7 +72,7 @@ export function PhaseSummary({
   return (
     <section className="phase-summary">
       <div>
-        <Badge>PHASE 2</Badge>
+        <Badge>PHASE 3</Badge>
         <h3>暮らしの24時間</h3>
         <p>
           睡眠 {g.routine.sleepHours}h · 勤務 {work}h · 移動 {commute}h · 食事等
@@ -98,12 +99,16 @@ export function CareerPanel({ g }: { g: GameState }) {
   const [query, setQuery] = useState(""),
     [industry, setIndustry] = useState("all"),
     [sort, setSort] = useState("default");
-  let list = jobs.filter(
-    (j) =>
-      (industry === "all" || j.industry === industry) &&
-      [j.name, j.company, j.location].some((v) => v.includes(query)),
-  );
+  let list = jobs
+    .map((j) => jobOffer(g, j))
+    .filter(
+      (j) =>
+        (industry === "all" || j.industry === industry) &&
+        [j.name, j.company, j.location].some((v) => v.includes(query)),
+    );
   if (sort === "wage") list = [...list].sort((a, b) => b.wage - a.wage);
+  if (sort === "commute")
+    list = [...list].sort((a, b) => a.commute - b.commute || a.fare - b.fare);
   if (sort === "hours") list = [...list].sort((a, b) => a.hours - b.hours);
   return (
     <>
@@ -137,6 +142,7 @@ export function CareerPanel({ g }: { g: GameState }) {
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="default">おすすめ順</option>
             <option value="wage">換算時給が高い順</option>
+            <option value="commute">通勤が短い順</option>
             <option value="hours">勤務時間が短い順</option>
           </select>
         </label>
@@ -346,7 +352,7 @@ function ContractCard({ g, e }: { g: GameState; e: EmploymentContract }) {
             onChange={(e) => setStart(Number(e.target.value))}
           >
             {Array.from({ length: 35 }, (_, i) => i * 0.5 + 6)
-              .filter((v) => v + j.hours + j.commute <= 24)
+              .filter((v) => v + j.hours + e.commute <= 24)
               .map((v) => (
                 <option key={v} value={v}>
                   {clock(v)}

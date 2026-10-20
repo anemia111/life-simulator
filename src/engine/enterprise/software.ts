@@ -1,6 +1,7 @@
 import type { IndustryModule } from "./types";
 import { book, spend } from "./accounting";
 export const software: IndustryModule = {
+  siteProfile: { locality: 0.15, storage: false },
   id: "software",
   name: "デジタル商品・ソフトウェア",
   description:

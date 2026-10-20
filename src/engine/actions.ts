@@ -1,3 +1,10 @@
+import {
+  moveToProperty,
+  leaseProperty,
+  releaseProperty,
+  visitFacility,
+} from "./spatial/commands";
+import { property, homeProperty, route } from "./spatial/selectors";
 import { executeEnterprise } from "./enterprise";
 import type { GameState, ActionTarget, Skill } from "./types";
 import { availableHours } from "./schedule";
@@ -325,6 +332,47 @@ add({
     if (!t.enterprise) throw Error("経営指示がありません");
     executeEnterprise(s, t.enterprise);
   },
+});
+add({
+  id: "map-move",
+  label: "物件へ引っ越す",
+  hours: 2,
+  target: "housing",
+  effect: (s, t) => moveToProperty(s, t.id!),
+});
+add({
+  id: "map-lease",
+  label: "物件を事業・会社で借りる",
+  hours: 1,
+  target: "business",
+  effect: (s, t) => leaseProperty(s, t.id!, t.value!),
+});
+add({
+  id: "map-release",
+  label: "事業物件を解約する",
+  hours: 0.5,
+  target: "business",
+  effect: (s, t) => releaseProperty(s, t.id!),
+});
+add({
+  id: "map-favorite",
+  label: "日常の施設を登録・解除",
+  hours: 0,
+  target: "none",
+  effect: (s, t) => {
+    if (property(t.id!).kind !== "facility")
+      throw Error("施設を選択してください");
+    s.spatial.favorites = s.spatial.favorites.includes(t.id!)
+      ? s.spatial.favorites.filter((id) => id !== t.id)
+      : [...s.spatial.favorites, t.id!];
+  },
+});
+add({
+  id: "map-visit",
+  label: "都市の施設を利用する",
+  duration: (s, t) => 1 + route(homeProperty(s), property(t.id!)).hours * 2,
+  target: "none",
+  effect: (s, t) => visitFacility(s, t.id!),
 });
 export const dailyActions = () =>
   [...actionRegistry.values()].filter((a) => a.daily);
