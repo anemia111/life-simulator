@@ -80,7 +80,7 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
       description: t.policy?.slice(0, 200) || "自由な事業活動",
       representative: "player",
       shares,
-      shareholders: [{ personId: "player", shares, paid: 0 }],
+      shareholders: [{ personId: "player", shares, paid: capital }],
       capital,
       dividends: 0,
       status: "active",
@@ -177,8 +177,11 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
       c.capital += n;
       c.shares += share;
       const h = c.shareholders.find((h) => h.personId === "player");
-      if (h) h.shares += share;
-      else c.shareholders.push({ personId: "player", shares: share, paid: 0 });
+      if (h) {
+        h.shares += share;
+        h.paid += n;
+      } else
+        c.shareholders.push({ personId: "player", shares: share, paid: n });
     }
     if (t.operation === "officer") {
       if (
@@ -257,6 +260,7 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
         cash: -price,
         inventory: price,
       });
+      own.paid -= shareValue(own.paid, n, own.shares);
       own.shares -= n;
       const h = c.shareholders.find((h) => h.personId === buyer.id);
       if (h) {

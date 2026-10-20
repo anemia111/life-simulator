@@ -142,9 +142,11 @@ function convertOwnership(
       );
     }
     const cost =
-      h.personId === "player"
-        ? Math.max(0, Math.floor((nav * h.shares) / c.shares))
-        : h.paid;
+      h.paid > 0
+        ? h.paid
+        : h.personId === "player"
+          ? Math.max(0, Math.floor((nav * h.shares) / c.shares))
+          : 0;
     const resident = s.simulation.residents.find((r) => r.id === h.personId);
     const carry = Math.min(h.booked ?? 0, resident?.book.inventory ?? 0);
     if (resident && carry)

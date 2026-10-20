@@ -371,6 +371,10 @@ describe("Phase 6 世界企業・証券市場", () => {
     expect(offer.status).toBe("listed");
     expect(c.shares).toBe(200);
     expect(held(account(s), i.id)).toBe(80);
+    expect(
+      account(s).positions.find((p) => p.instrumentId === i.id)!.cost,
+    ).toBe(120000);
+    expect(account(s).realized).toBe(3966);
     expect(offer.raised).toBe(170000);
     expect(offer.secondaryProceeds).toBe(33966);
     expect(c.book.cash).toBe(beforeCash - 10000 + 170000 - 170);
