@@ -1,3 +1,4 @@
+import { securitiesWealth } from "../securities/ledger";
 import { age } from "../person";
 import {
   careHours,
@@ -864,6 +865,7 @@ export function verifySimulation(s: GameState) {
 }
 
 export const residentNetWorth = (s: GameState, r: Resident) =>
+  securitiesWealth(s, r.id) +
   householdClaim(s, r.id) +
   r.book.cash +
   r.book.inventory +

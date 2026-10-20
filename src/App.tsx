@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { LocationSummary } from "./ui/LocationSummary";
 const LifeJourney = lazy(() => import("./ui/LifeJourney"));
+const SecuritiesPanel = lazy(() => import("./ui/SecuritiesPanel"));
 const WorldPanel = lazy(() => import("./ui/WorldPanel"));
 const CityMap = lazy(() => import("./ui/CityMap"));
 import { personalEnterpriseProfit } from "./engine/enterprise/accounting";
@@ -73,6 +74,7 @@ const nav = [
   { id: "calendar", label: "カレンダー", icon: CalendarDays },
   { id: "business", label: "事業を営む", icon: Store },
   { id: "companies", label: "会社・所有権", icon: Building2 },
+  { id: "securities", label: "証券・投資", icon: TrendingUp },
   { id: "finance", label: "資産と収支", icon: Wallet },
   { id: "skills", label: "学びとスキル", icon: BookOpen },
   { id: "life", label: "暮らし", icon: House },
@@ -1035,11 +1037,11 @@ function Saves({ g, onBack }: { g: GameState; onBack: () => void }) {
       <Card className="mt">
         <h2>実装範囲について</h2>
         <p>
-          v0.6 ·
-          24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、会社、都市マップ、企業AI、人生目標、年表、交際・結婚・基本的な子育てと共同会計、旧セーブ移行を実装しています。
+          v0.7 ·
+          24時間の生活、掛け持ち勤務、学習・昇給・昇格、交流、借入、個人事業、会社、都市マップ、企業AI、人生目標、年表、交際・結婚・基本的な子育てと共同会計、225社・45業界の証券売買・指数・ファンド・IPO、旧セーブ移行を実装しています。
         </p>
         <p className="muted">
-          公開株式市場・世界企業200〜500社、M&A、税・社会保険、共同創業、離婚・相続・学校制度、複数都市への移住は未実装です。年齢や事業の赤字による強制終了はありません。
+          2000〜3000社への世界拡張・為替、M&A、税・社会保険、共同創業、離婚・相続・学校制度、複数都市への移住は未実装です。年齢や事業の赤字による強制終了はありません。
         </p>
       </Card>
     </>
@@ -1126,7 +1128,7 @@ export default function App() {
           <div className="save-status">
             <span className="dot" />
             {saving ? "保存中…" : saved ? "自動保存済み" : "未保存"}
-            <span>v0.6</span>
+            <span>v0.7</span>
           </div>
         </div>
       </aside>
@@ -1180,6 +1182,10 @@ export default function App() {
             <Suspense fallback={<p>世界の情報を読み込んでいます…</p>}>
               <WorldPanel g={g} go={go} />
             </Suspense>
+          ) : page === "securities" ? (
+            <Suspense fallback={<p>市場を読み込み中…</p>}>
+              <SecuritiesPanel g={g} />
+            </Suspense>
           ) : page === "career" ? (
             <Career g={g} />
           ) : page === "shifts" ? (
@@ -1229,7 +1235,7 @@ export default function App() {
           )}
           <footer className="page-footer">
             <span>あなたのペースで、あなたの人生を。</span>
-            <span>LIFE SIMULATOR · PHASE 5</span>
+            <span>LIFE SIMULATOR · PHASE 6</span>
           </footer>
         </main>
         <div className="time-dock">

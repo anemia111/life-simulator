@@ -1,3 +1,4 @@
+import { securitiesWealth } from "../engine/securities";
 import { householdClaim } from "../engine/social/selectors";
 import { jobOffer } from "../engine/spatial/selectors";
 import { PersonalBusinessFinance } from "./Phase2";
@@ -892,6 +893,9 @@ export function FinancePanel({ g }: { g: GameState }) {
                     enterpriseWealth(g),
                 )}
               </b>
+            </span>
+            <span>
+              証券口座・上場株・ファンド<b>{yen(securitiesWealth(g))}</b>
             </span>
             <span>
               共同資金の持分（未払い負担を含む）<b>{yen(householdClaim(g))}</b>

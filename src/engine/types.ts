@@ -1,3 +1,4 @@
+import type { SecuritiesState, SecuritiesInput } from "./securities/types";
 import type { SocialState } from "./social/types";
 import type { Simulation } from "./simulation/types";
 import type { SpatialState } from "./spatial/types";
@@ -197,7 +198,8 @@ export interface Routine {
   socialTarget: string | null;
 }
 export interface GameState {
-  schemaVersion: 6;
+  schemaVersion: 7;
+  securities: SecuritiesState;
   social: SocialState;
   simulation: Simulation;
   spatial: SpatialState;
@@ -291,6 +293,7 @@ export type ActionTarget = {
   price?: number;
   contractId?: string;
   enterprise?: EnterpriseInput;
+  securities?: SecuritiesInput;
 };
 export type Command =
   | { type: "enterprise"; input: EnterpriseInput }

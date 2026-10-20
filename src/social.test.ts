@@ -326,7 +326,7 @@ describe("Phase 5 人生・NPC・家族", () => {
   );
   it("v5の実セーブを資金・事業・勤務・乱数・地図を保持して移行する", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(6);
+    expect(s.schemaVersion).toBe(7);
     for (const key of [
       "cash",
       "bank",

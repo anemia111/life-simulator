@@ -1,3 +1,4 @@
+import { securitiesWealth } from "./securities/ledger";
 import { householdClaim } from "./social/selectors";
 import { enterpriseWealth } from "./enterprise/accounting";
 import type { GameState, FinanceKind, LedgerEntry, MonthReport } from "./types";
@@ -13,7 +14,8 @@ export const netWorth = (s: GameState) =>
   s.assets.reduce((a, b) => a + b.cost, 0) -
   s.debt +
   enterpriseWealth(s) +
-  householdClaim(s);
+  householdClaim(s) +
+  securitiesWealth(s);
 export function monthReport(s: GameState): MonthReport {
   const month = s.date.slice(0, 7);
   let r = s.reports.find((r) => r.month === month);

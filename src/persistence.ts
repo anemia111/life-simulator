@@ -1,3 +1,5 @@
+import { initialSecurities } from "./engine/securities/initial";
+import { securitiesSchema, verifySecurities } from "./engine/securities/schema";
 import { socialSchema, verifySocial } from "./engine/social/schema";
 import { initialSocial } from "./engine/social/initial";
 import { ensureBond } from "./engine/social/relationships";
@@ -85,7 +87,8 @@ const block = z.object({
   targetId: text.optional(),
 });
 const schema = z.object({
-  schemaVersion: z.literal(6),
+  schemaVersion: z.literal(7),
+  securities: securitiesSchema,
   social: socialSchema,
   simulation: simulationSchema,
   spatial: spatialSchema,
@@ -308,7 +311,12 @@ export function validateSave(value: unknown): GameState {
     value.schemaVersion === 4;
   if (oldV4) {
     const previous = schema
-      .omit({ simulation: true, schemaVersion: true, social: true })
+      .omit({
+        simulation: true,
+        schemaVersion: true,
+        social: true,
+        securities: true,
+      })
       .extend({ schemaVersion: z.literal(4) })
       .safeParse(value);
     if (!previous.success) throw Error("旧セーブ形式が不正です");
@@ -343,11 +351,13 @@ export function validateSave(value: unknown): GameState {
       f.sites = f.sites.filter(
         (id) => !upgraded.spatial.leases.some((l) => l.propertyId === id),
       );
-    upgraded.schemaVersion = 6;
+    upgraded.schemaVersion = 7;
     upgraded.social = initialSocial(upgraded);
     for (const r of upgraded.relationships)
       ensureBond(upgraded, "player", r.npcId);
     seedGoals(upgraded);
+    upgraded.securities = initialSecurities(upgraded);
+    upgraded.schemaVersion = 7;
     value = upgraded;
   }
   if (
@@ -369,7 +379,12 @@ export function validateSave(value: unknown): GameState {
       residents: z.array(legacyResident),
     });
     const previous = schema
-      .omit({ schemaVersion: true, social: true, simulation: true })
+      .omit({
+        schemaVersion: true,
+        social: true,
+        simulation: true,
+        securities: true,
+      })
       .extend({ schemaVersion: z.literal(5), simulation: legacySim })
       .safeParse(value);
     if (!previous.success) throw Error("v0.5のセーブ形式が不正です");
@@ -392,6 +407,27 @@ export function validateSave(value: unknown): GameState {
     for (const r of upgraded.relationships)
       ensureBond(upgraded, "player", r.npcId);
     seedGoals(upgraded);
+    upgraded.securities = initialSecurities(upgraded);
+    upgraded.schemaVersion = 7;
+    value = upgraded;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "schemaVersion" in value &&
+    value.schemaVersion === 6
+  ) {
+    const previous = schema
+      .omit({ schemaVersion: true, securities: true })
+      .extend({ schemaVersion: z.literal(6) })
+      .safeParse(value);
+    if (!previous.success) throw Error("v0.6のセーブ形式が不正です");
+    const upgraded = {
+      ...previous.data,
+      schemaVersion: 7,
+      securities: null,
+    } as unknown as GameState;
+    upgraded.securities = initialSecurities(upgraded);
     value = upgraded;
   }
   const r = schema.safeParse(value);
@@ -426,6 +462,8 @@ export function validateSave(value: unknown): GameState {
         });
     }
   validateSpatial(s);
+  if (!verifySecurities(s))
+    throw Error("証券・所有権・予約・世界会計の整合性が不正です");
   if (!verifySocial(s))
     throw Error("人生・人間関係・家族会計の整合性が不正です");
   if (!verifySimulation(s))
@@ -509,7 +547,9 @@ export function validateSave(value: unknown): GameState {
         !unique(c.shareholders.map((h) => h.personId)) ||
         c.shareholders.some(
           (h) =>
-            h.personId !== "player" && !s.npcs.some((p) => p.id === h.personId),
+            h.personId !== "player" &&
+            !s.npcs.some((p) => p.id === h.personId) &&
+            !s.securities.accounts.some((a) => a.ownerId === h.personId),
         ),
     )
   )

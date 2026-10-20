@@ -1,3 +1,4 @@
+import { globalDemandFactor } from "../securities/world";
 import { worldIndustries } from "./models";
 import type { GameState } from "../types";
 import type { Enterprise, IndustryModule } from "../enterprise/types";
@@ -22,6 +23,7 @@ export function allocateMarket(
     0,
     Math.floor(
       m.market *
+        globalDemandFactor(s, m.id) *
         (worldIndustries.get(m.id)?.demandScale ?? 1) *
         (s.world.population / 120000) *
         s.world.economy *

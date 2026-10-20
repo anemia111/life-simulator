@@ -1117,8 +1117,16 @@ export function CompanyPanel({
               </span>
               <h2>{c.name}</h2>
               <p>
-                代表 {g.person.name} / 設立 {c.founded} / 発行済 {c.shares}株 /
-                資本金 {yen(c.capital)}
+                代表{" "}
+                {c.representative === "player"
+                  ? g.person.name
+                  : (g.securities.accounts.find(
+                      (a) => a.ownerId === c.representative,
+                    )?.name ??
+                    g.npcs.find((p) => p.id === c.representative)?.name ??
+                    "外部取締役会")}{" "}
+                / 設立 {c.founded} / 発行済 {c.shares}株 / 資本金{" "}
+                {yen(c.capital)}
               </p>
             </div>
             <Building2 />

@@ -1,3 +1,4 @@
+import { initialSecurities } from "./engine/securities/initial";
 import { initialSocial } from "./engine/social/initial";
 import { seedGoals } from "./engine/goals";
 import { initialSimulation } from "./engine/simulation/initial";
@@ -136,5 +137,6 @@ export function migrateV1(value: unknown) {
   s.simulation = initialSimulation(s);
   s.social = initialSocial(s);
   seedGoals(s);
+  s.securities = initialSecurities(s);
   return s;
 }

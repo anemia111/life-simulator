@@ -9,7 +9,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ["react", "react-dom", "zustand"],
+          react: ["react", "react-dom", "react-dom/client", "zustand"],
           validation: ["zod"],
         },
       },

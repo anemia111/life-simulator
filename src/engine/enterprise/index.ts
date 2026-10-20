@@ -1,3 +1,9 @@
+import {
+  listedInstrument,
+  pendingOffering,
+  syncShareholders,
+} from "../securities/ipo";
+import { payDividend } from "../securities/world";
 import { age } from "../person";
 import { resident as initializeResident } from "../simulation/initial";
 import { releaseSites } from "../spatial/commands";
@@ -156,6 +162,13 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
   ) {
     const c = company(s, t.id),
       n = integer(t.amount, 1);
+    if (
+      (listedInstrument(s, c.id) || pendingOffering(s, c.id)) &&
+      ["capital", "sell-shares", "dissolve"].includes(t.operation)
+    )
+      throw Error(
+        "上場・申請中の株式操作は証券市場と株主決議から行ってください",
+      );
     if (t.operation === "capital") {
       const share = integer(t.value ?? 1, 1);
       if (n < share) throw Error("出資額は発行株式数以上です");
@@ -185,6 +198,12 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
         companyProfit(s, c) - c.dividends < n
       )
         throw Error("配当には現金と未分配の稼得利益が必要です");
+      if (listedInstrument(s, c.id)) {
+        if (n % c.shares)
+          throw Error("上場配当は1株単位の整数で指定してください");
+        payDividend(s, c.id, n / c.shares);
+        return;
+      }
       book(s, c, "配当", { cash: -n, equity: -n });
       c.dividends += n;
       const mine = shareValue(
@@ -193,6 +212,22 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
         c.shares,
       );
       if (mine) receive(s, mine, c.name + "から配当", "other", "bank");
+      let paid = mine;
+      for (const holder of c.shareholders.filter(
+        (h) => h.personId !== "player",
+      )) {
+        const value = shareValue(n, holder.shares, c.shares),
+          r = s.simulation.residents.find((r) => r.id === holder.personId);
+        if (r && value) {
+          book(s, r, "非公開株配当受取", { cash: value, revenue: value });
+          paid += value;
+        }
+      }
+      const remainder = n - paid;
+      if (remainder) {
+        book(s, c, "配当端数の留保", { cash: remainder, equity: remainder });
+        c.dividends -= remainder;
+      }
     }
     if (t.operation === "sell-shares") {
       const relation = s.relationships.find(
@@ -213,15 +248,29 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
             (x.shareholders.find((h) => h.personId === buyer.id)?.paid ?? 0),
           0,
         );
-      if (price > budget) throw Error("買い手の投資余力を超えています");
+      const buyerAccount = s.simulation.residents.find(
+        (r) => r.id === buyer.id,
+      );
+      if (price > budget || !buyerAccount || buyerAccount.book.cash < price)
+        throw Error("買い手の投資余力を超えています");
+      book(s, buyerAccount, "非公開株式の購入", {
+        cash: -price,
+        inventory: price,
+      });
       own.shares -= n;
       const h = c.shareholders.find((h) => h.personId === buyer.id);
       if (h) {
         h.shares += n;
         h.paid += price;
+        h.booked = (h.booked ?? 0) + price;
       } else
-        c.shareholders.push({ personId: buyer.id, shares: n, paid: price });
-      receive(s, price, "非公開株式の相対売却（簿価）", "other", "bank");
+        c.shareholders.push({
+          personId: buyer.id,
+          shares: n,
+          paid: price,
+          booked: price,
+        });
+      receive(s, price, "非公開株式の相対売却（簿価）", "transfer", "bank");
     }
     if (t.operation === "dissolve") {
       if (
@@ -236,14 +285,32 @@ export function executeEnterprise(s: GameState, t: EnterpriseInput) {
         c.book.debt
       )
         throw Error("全事業を閉鎖し残金回収・負債精算を行ってください");
-      const cash = c.book.cash,
-        mine = shareValue(
-          cash,
-          c.shareholders.find((h) => h.personId === "player")?.shares ?? 0,
-          c.shares,
-        );
+      const cash = c.book.cash;
+      let paid = 0;
+      for (const h of c.shareholders) {
+        const value = shareValue(cash, h.shares, c.shares);
+        if (h.personId === "player") {
+          if (value)
+            receive(s, value, "会社解散の残余財産", "transfer", "bank");
+          paid += value;
+        } else {
+          const r = s.simulation.residents.find((r) => r.id === h.personId);
+          if (!r) throw Error("株主口座を確認できません");
+          const cost = Math.min(h.booked ?? 0, r.book.inventory);
+          book(s, r, "非公開会社解散・残余財産", {
+            cash: value,
+            inventory: -cost,
+            revenue: Math.max(0, value - cost),
+            expenses: Math.max(0, cost - value),
+          });
+          paid += value;
+          h.paid = 0;
+        }
+      }
+      const remainder = cash - paid;
+      if (remainder)
+        receive(s, remainder, "会社解散の円未満端数清算", "transfer", "bank");
       book(s, c, "解散・残余財産分配", { cash: -cash, equity: -cash });
-      if (mine) receive(s, mine, "会社解散の残余財産", "transfer", "bank");
       releaseSites(s, c.id);
       c.status = "dissolved";
     }
@@ -454,7 +521,14 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
       (v.ownerId === "player" ||
         s.companies.some((c) => c.id === v.ownerId && c.status === "active")),
   );
-  const totalWeight = active.reduce((n, v) => n + v.weight, 0);
+  const controlled = (v: Enterprise) =>
+    v.ownerId === "player" ||
+    s.companies.some(
+      (c) => c.id === v.ownerId && c.representative === "player",
+    );
+  const totalWeight = active
+    .filter(controlled)
+    .reduce((n, v) => n + v.weight, 0);
   for (const v of s.ventures) {
     for (const o of v.orders.filter(
       (o) => o.status === "invoiced" && o.payDate <= s.date,
@@ -475,7 +549,7 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
     m.obligations?.(s, v);
     settle(s, v);
     const own =
-      v.status === "active" && totalWeight
+      v.status === "active" && controlled(v) && totalWeight
         ? (ownerHours * v.weight) / totalWeight
         : 0;
     v.data.siteCommuteHours = 0;

@@ -88,7 +88,7 @@ test("仕事・小売・再投資・法人移管・二社設立・保存復元�
   await expect(page.getByText("暮らしの文具店", { exact: true })).toBeVisible();
   await page.screenshot({ path: "../phase2-desktop.png", fullPage: true });
   const saved = await json(page);
-  expect(saved.schemaVersion).toBe(6);
+  expect(saved.schemaVersion).toBe(7);
   expect(saved.companies).toHaveLength(2);
   expect(saved.ventures[0].book.revenue).toBeGreaterThan(0);
   expect(saved.ventures[0].level).toBe(2);

@@ -87,7 +87,7 @@ test("PCで世界経済・企業・NPC・市場・求人・ニュースを操作
   const chunks = [];
   for await (const c of stream!) chunks.push(c);
   const state = JSON.parse(Buffer.concat(chunks).toString());
-  expect(state.schemaVersion).toBe(6);
+  expect(state.schemaVersion).toBe(7);
   expect(state.simulation.firms.length).toBeGreaterThanOrEqual(20);
   expect(
     state.simulation.residents.some((r: any) => r.earned > 0),

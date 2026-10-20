@@ -52,7 +52,7 @@ describe("公開v0.1セーブからPhase 1へ", () => {
   });
   it("実際の公開版の現金・債務・給与・事業・設備・能力・日付を維持", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(6);
+    expect(s.schemaVersion).toBe(7);
     expect(s.cash).toBe(fixture.cash);
     expect(s.debt).toBe(fixture.debt);
     expect(s.bank).toBe(0);
@@ -100,7 +100,7 @@ describe("公開v0.1セーブからPhase 1へ", () => {
       };
     });
     const s = await loadGame(1);
-    expect(s.schemaVersion).toBe(6);
+    expect(s.schemaVersion).toBe(7);
     expect((await listSaves())[0].state.cash).toBe(fixture.cash);
     await saveGame(1, s);
     expect(await loadGame(1)).toEqual(s);

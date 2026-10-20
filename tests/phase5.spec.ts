@@ -86,7 +86,7 @@ test("PCで目標達成・人生年表・双方向交流・共同積立を実操
     .click();
   await expect(page.getByTestId("household-cash")).toHaveText("¥0");
   const state = await download(page);
-  expect(state.schemaVersion).toBe(6);
+  expect(state.schemaVersion).toBe(7);
   expect(
     state.social.goals.some(
       (g: any) => g.actorId === "player" && g.status === "achieved",

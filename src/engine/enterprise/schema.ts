@@ -134,7 +134,9 @@ export const companySchema = z.object({
   description: text,
   representative: text,
   shares: n.min(1),
-  shareholders: z.array(z.object({ personId: text, shares: n, paid: n })),
+  shareholders: z.array(
+    z.object({ personId: text, shares: n, paid: n, booked: n.optional() }),
+  ),
   capital: n,
   dividends: n,
   status: z.enum(["active", "dissolved"]),

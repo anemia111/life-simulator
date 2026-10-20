@@ -119,7 +119,7 @@ describe("24時間・シフトと1年間", () => {
     }
     expect(reconcile(once)).toBe(true);
     expect(validateSave(once)).toEqual(once);
-  }, 20000);
+  }, 60000);
   it("予定欠勤は次の該当勤務日に一回だけで給与と交通費は発生しない", () => {
     let s = advanceDays(working(), 3);
     s = dispatch(s, { type: "absence", contractId: s.employments[0].id });

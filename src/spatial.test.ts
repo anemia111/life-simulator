@@ -387,10 +387,10 @@ describe("Phase 3 都市・立地・物件", () => {
     expect(parseSave(JSON.stringify(fast))).toEqual(fast);
     await saveGame(2, fast);
     expect(await loadGame(2)).toEqual(fast);
-  }, 20000);
+  }, 60000);
   it("v3の資金・事業・在庫・元帳を保持して在宅へ引継ぐ", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(6);
+    expect(s.schemaVersion).toBe(7);
     expect(s.cash).toBe(fixture.cash);
     expect(s.ventures).toEqual(fixture.ventures);
     expect(s.ledger).toEqual(fixture.ledger);

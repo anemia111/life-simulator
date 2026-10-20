@@ -122,7 +122,12 @@ export interface Company extends Accounts {
   description: string;
   representative: string;
   shares: number;
-  shareholders: { personId: string; shares: number; paid: number }[];
+  shareholders: {
+    personId: string;
+    shares: number;
+    paid: number;
+    booked?: number;
+  }[];
   capital: number;
   dividends: number;
   status: "active" | "dissolved";

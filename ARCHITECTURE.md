@@ -96,3 +96,8 @@ AI/NPCはenterprise.Accountsを再利用し、元帳60件のopening圧縮と120�
 engine/social、engine/goals、engine/eventsを追加。SocialStateを保存v6へ含め、人物IDでPerson/Residentと結合。共同財布は既存Accounts、個人との振替はFinance.postとbookで対応記帳。claims合計=navを検証し、純資産へ本人持分だけ加算する。子の養育をscheduleのcareへ、NPCの交流をResident.hoursへ統合する。UIに条件・資金移動・関係成立の計算を持ち込まない。
 
 日次の世界処理の前に交流予約・世帯住所を同期。NPCはessential2hとcare/socialを除いた時間から事業・学習を割当。勤務・事業・費用処理の後に共同家計、週次社会行動、実変更からの年表、目標を評価。描画時は世界を進めない。重要イベントは年表へ残し、日常記憶は24件、共同帳簿はチェックポイント付き60件へ圧縮。詳細・追加例はSOCIAL_SYSTEM.md。
+
+
+## v0.7 世界企業・証券市場
+
+engine/securitiesを追加。共通Accountsで有限な取引主体・予約・株数・現金総量を検証。月次業績、四半期遅延開示、平日の日次注文清算を分離。公開財務だけを投資判断へ渡し、参考価値と約定価格を区別。IPOは既存会社を発行体として新株資本と既存株売却を対応記帳する。上場保有は従来のcompanyNAVとの重複を除外。UIは遅延読み込みのSecuritiesPanel。保存v7でv1〜v6実セーブを維持。計算式・追加点・制限はSECURITIES_SYSTEM.md。

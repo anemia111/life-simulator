@@ -1,3 +1,4 @@
+import { verifySecurities } from "./engine/securities/schema";
 import { verifySocial } from "./engine/social/schema";
 import { describe, it, expect } from "vitest";
 import { newGame, advanceDays, dispatch } from "./engine";
@@ -28,6 +29,7 @@ import fixture from "../tests/fixtures/v4-save.json";
 const audit = (s: ReturnType<typeof newGame>) => {
   expect(verifySimulation(s)).toBe(true);
   expect(verifySocial(s)).toBe(true);
+  expect(verifySecurities(s)).toBe(true);
   expect(reconcile(s)).toBe(true);
   for (const a of [...s.simulation.firms, ...s.simulation.residents])
     expect(verifyAccounts(a)).toBe(true);
@@ -35,7 +37,7 @@ const audit = (s: ReturnType<typeof newGame>) => {
 describe("Phase 4 自律世界と有限市場", () => {
   it("旧版から個人残高・勤務・マップ・既存企業資金を維持して移行", () => {
     const s = validateSave(fixture);
-    expect(s.schemaVersion).toBe(6);
+    expect(s.schemaVersion).toBe(7);
     expect(s.cash).toBe(fixture.cash);
     expect(s.spatial).toEqual(fixture.spatial);
     expect(s.ventures).toEqual(fixture.ventures);

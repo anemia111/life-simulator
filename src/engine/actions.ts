@@ -1,3 +1,4 @@
+import { executeSecurities } from "./securities";
 import { addGoal } from "./goals";
 import { profile, npcFree, bondFor } from "./social/selectors";
 import {
@@ -638,4 +639,22 @@ add({
       ? null
       : "交際中の相手を選んでください",
   effect: (s, t) => endDating(s, "player", t.id!),
+});
+
+add({
+  id: "securities-manage",
+  label: "証券口座・投資の指示",
+  category: "finance",
+  target: "account",
+  hours: 0,
+  duration: (_s, t) =>
+    t.securities?.operation === "ipo"
+      ? 2
+      : t.securities?.operation === "vote"
+        ? 1
+        : 0,
+  effect: (s, t) => {
+    if (!t.securities) throw Error("証券指示がありません");
+    executeSecurities(s, t.securities);
+  },
 });

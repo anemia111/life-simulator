@@ -1,3 +1,5 @@
+import { initialSecurities } from "./securities/initial";
+import { securitiesDay } from "./securities";
 import { initialSocial } from "./social/initial";
 import { seedGoals, updateGoals } from "./goals";
 import { prepareSocialDay } from "./social/relationships";
@@ -72,7 +74,8 @@ export function newGame(
     skills: { service: 40 + n, craft: 35 + n, digital: 30 + n },
   }));
   const s: GameState = {
-    schemaVersion: 6,
+    schemaVersion: 7,
+    securities: null!,
     social: null!,
     simulation: null!,
     spatial: initialSpatial(),
@@ -134,6 +137,7 @@ export function newGame(
   s.simulation = initialSimulation(s, seed);
   s.social = initialSocial(s);
   seedGoals(s);
+  s.securities = initialSecurities(s);
   pay(s, 24000, "入居月の家賃");
   return s;
 }
@@ -306,6 +310,7 @@ export function advanceDays(state: GameState, days: number) {
           .filter((b) => b.kind === "commute" || b.kind === "care")
           .reduce((n, b) => n + b.hours, 0),
     );
+    securitiesDay(s);
     observeLife(s);
     updateGoals(s);
     const entries = s.ledger.filter((e) => e.date === s.date);

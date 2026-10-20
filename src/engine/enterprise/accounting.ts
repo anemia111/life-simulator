@@ -70,7 +70,12 @@ export function book(
   report.expenses += delta.expenses;
   report.cashFlow += delta.cash;
   report.funding += delta.equity;
-  if ("ownerId" in a && a.ownerId === "player") {
+  if (
+    "ownerId" in a &&
+    a.ownerId === "player" &&
+    "personalRevenue" in a &&
+    "personalExpenses" in a
+  ) {
     const v = a as Enterprise;
     v.personalRevenue += delta.revenue;
     v.personalExpenses += delta.expenses;
@@ -138,16 +143,20 @@ export function enterpriseWealth(s: GameState) {
     s.ventures
       .filter((v) => v.ownerId === "player")
       .reduce((n, v) => n + nav(v), 0) +
-    s.companies.reduce(
-      (n, c) =>
-        n +
-        shareValue(
-          Math.max(0, companyNAV(s, c)),
-          c.shareholders.find((h) => h.personId === "player")?.shares ?? 0,
-          c.shares,
-        ),
-      0,
-    )
+    s.companies
+      .filter(
+        (c) => !s.securities?.instruments.some((i) => i.issuerId === c.id),
+      )
+      .reduce(
+        (n, c) =>
+          n +
+          shareValue(
+            Math.max(0, companyNAV(s, c)),
+            c.shareholders.find((h) => h.personId === "player")?.shares ?? 0,
+            c.shares,
+          ),
+        0,
+      )
   );
 }
 export function verifyAccounts(a: Accounts) {
