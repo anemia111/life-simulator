@@ -99,7 +99,7 @@ export default function WorldPanel({
           sub="月次の雇用と企業稼働を反映"
         />
         <Metric
-          label="活動中の企業"
+          label="活動中のAI企業"
           value={active.length + "社"}
           sub={
             sim.firms.filter((f) => f.status === "closed").length + "社が撤退"
@@ -378,6 +378,7 @@ export default function WorldPanel({
                 <dt>勤務先</dt>
                 <dd>
                   {sim.firms.find((f) => f.id === person.employerId)?.name ??
+                    g.ventures.find((v) => v.id === person.employerId)?.name ??
                     "―"}
                 </dd>
                 <dt>現金 / 負債</dt>

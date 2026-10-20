@@ -289,12 +289,21 @@ describe("Phase 4 自律世界と有限市場", () => {
       input: { operation: "hire", id: s.ventures[0].id },
     });
     const id = s.ventures[0].employees[0].npcId;
+    s = dispatch(s, {
+      type: "execute",
+      actionId: "map-lease",
+      target: { id: "harbor-shop", value: s.ventures[0].id },
+    });
     expect(s.npcs.length).toBe(count);
     s = advanceDays(s, 1);
     const r = s.simulation.residents.find((r) => r.id === id)!;
     expect(r.earned).toBe(4400);
     expect(r.book.revenue).toBe(4400);
     expect(r.hours.work).toBe(4);
+    expect(r.hours.commute).toBeGreaterThan(0);
+    expect(
+      s.npcs.find((p) => p.id === id)!.experience.service,
+    ).toBeGreaterThanOrEqual(4);
     expect(s.simulation.firms.every((f) => !f.employees.includes(id))).toBe(
       true,
     );
@@ -328,6 +337,43 @@ describe("Phase 4 自律世界と有限市場", () => {
       s.simulation.firms.find((f) => f.id === "office-co")!.staffHours,
     ).toBe(npcHours + s.history.at(-1)!.workHours);
     expect(s.history.at(-1)!.workHours).toBeGreaterThan(0);
+    audit(s);
+  });
+  it("プレイヤーの採用と営業拠点も失業率と地区需要へ反映する", () => {
+    let s = newGame("地域への影響", "comfortable");
+    for (const f of s.simulation.firms) closeFirm(s, f);
+    const baseline = structuredClone(s);
+    economyMonth(baseline);
+    s = dispatch(s, {
+      type: "enterprise",
+      input: {
+        operation: "create",
+        name: "地域の店",
+        industry: "retail",
+        product: "stationery",
+        amount: 50000,
+        region: "suburb",
+      },
+    });
+    s = dispatch(s, {
+      type: "execute",
+      actionId: "map-lease",
+      target: { id: "harbor-shop", value: s.ventures[0].id },
+    });
+    for (let i = 0; i < 3; i++)
+      s = dispatch(s, {
+        type: "enterprise",
+        input: { operation: "hire", id: s.ventures[0].id },
+      });
+    economyMonth(s);
+    expect(s.simulation.unemployment).toBeLessThan(
+      baseline.simulation.unemployment,
+    );
+    expect(
+      s.simulation.districts.find((d) => d.id === "harbor")!.demand,
+    ).toBeGreaterThan(
+      baseline.simulation.districts.find((d) => d.id === "harbor")!.demand,
+    );
     audit(s);
   });
   it(

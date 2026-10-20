@@ -500,6 +500,10 @@ export function runEnterpriseDay(s: GameState, ownerHours: number) {
           book(s, resident, "事業スタッフ給与", { cash: wage, revenue: wage });
           resident.earned += wage;
           resident.income = wage;
+          settle(s, resident);
+          const p = s.npcs.find((p) => p.id === e.npcId)!;
+          p.skills[m.skill] = Math.min(100, p.skills[m.skill] + e.hours * 0.06);
+          p.experience[m.skill] += e.hours;
         }
         e.paid += wage;
         e.workedHours += e.hours;

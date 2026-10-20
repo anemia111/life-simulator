@@ -131,6 +131,9 @@ function rankJob(
 export function npcDecisions(s: GameState) {
   for (const r of s.simulation.residents) {
     const p = s.npcs.find((p) => p.id === r.id)!;
+    if (r.motive === "saving" || r.book.cash < 30000) r.standard = "frugal";
+    else if (r.motive === "spending" && r.book.cash > 150000)
+      r.standard = "comfortable";
     const own = s.simulation.firms.find(
       (f) => f.status === "active" && f.ownerId === r.id,
     );
@@ -166,9 +169,6 @@ export function npcDecisions(s: GameState) {
     if (best && best.id !== current?.id && improvement && random(s) < 0.8)
       changeJob(s, r, best.id);
     else r.lastDecision = current ? "勤務を継続" : "技能を学びながら求職";
-    if (r.book.cash < 30000) r.standard = "frugal";
-    else if (r.motive === "spending" && r.book.cash > 150000)
-      r.standard = "comfortable";
     if (s.date.endsWith("-01") && r.book.cash < 60000) {
       const cheaper = properties
         .filter((p) => p.kind === "home" && p.homeStyle === "share")
@@ -262,7 +262,16 @@ export function npcDay(s: GameState) {
     const v = s.ventures
       .flatMap((v) => v.employees)
       .find((e) => e.active && e.npcId === r.id);
-    if (v && ![0, 6].includes(weekday(s.date))) work = v.hours;
+    if (v && ![0, 6].includes(weekday(s.date))) {
+      work = v.hours;
+      const employer = s.ventures.find((x) => x.employees.includes(v))!;
+      const location = s.spatial.leases.find((l) => l.tenantId === employer.id);
+      if (location) {
+        const trip = route(site(s, r.homeId), site(s, location.propertyId));
+        commute = trip.hours * 2;
+        spend(s, r, trip.fare * 2, "事業勤務先への交通費", true);
+      }
+    }
     const own = s.simulation.firms.find(
       (f) => f.status === "active" && f.ownerId === r.id,
     );
@@ -538,23 +547,29 @@ export function updateVacancies(s: GameState) {
 export function economyMonth(s: GameState) {
   const sim = s.simulation;
   const active = sim.firms.filter((f) => f.status === "active");
+  const operating = s.ventures.filter((v) => v.status === "active");
   const seekers = sim.residents.filter(
-    (r) =>
-      !active.some((f) => f.ownerId === r.id) &&
-      !s.ventures.some((v) =>
-        v.employees.some((e) => e.active && e.npcId === r.id),
-      ),
+    (r) => !active.some((f) => f.ownerId === r.id),
   );
   const individual = seekers.length
-    ? seekers.filter((r) => r.jobId === null).length / seekers.length
+    ? seekers.filter(
+        (r) =>
+          r.jobId === null &&
+          !operating.some((v) =>
+            v.employees.some((e) => e.active && e.npcId === r.id),
+          ),
+      ).length / seekers.length
     : 0;
   sim.unemployment = clamp(
     sim.unemployment * 0.85 + individual * 0.15,
     0.02,
     0.5,
   );
-  const profitability = active.length
-    ? active.reduce((n, f) => n + (f.lastProfit > 0 ? 1 : 0), 0) / active.length
+  const participants = active.length + operating.length;
+  const profitability = participants
+    ? (active.filter((f) => f.lastProfit > 0).length +
+        operating.filter((v) => v.last.revenue > v.last.expenses).length) /
+      participants
     : 0;
   const target = clamp(
     1 + (profitability - 0.5) * 0.3 - (sim.unemployment - 0.05) * 0.7,
@@ -578,7 +593,12 @@ export function economyMonth(s: GameState) {
     const firms = active.filter((f) =>
       f.sites.some((id) => site(s, id).districtId === d.id),
     );
-    const occupied = firms.length;
+    const playerSites = s.spatial.leases.filter(
+      (l) =>
+        operating.some((v) => v.id === l.tenantId) &&
+        site(s, l.propertyId).districtId === d.id,
+    ).length;
+    const occupied = firms.length + playerSites;
     d.unemployment = clamp(
       sim.unemployment + (occupied < 2 ? 0.025 : -0.01),
       0.01,
